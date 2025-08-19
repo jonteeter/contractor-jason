@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'Lotus Contractor App',
   description: 'Professional flooring contractor management system - Mobile-first design for jobsite efficiency',
   keywords: ['contractor', 'flooring', 'construction', 'mobile', 'estimates', 'contracts'],
-  authors: [{ name: 'Lotus Development Team' }],
+  authors: [{ name: 'Tary Development Team' }],
   viewport: {
     width: 'device-width',
     initialScale: 1,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Lotus Contractor',
+    title: 'Tary',
   },
   formatDetection: {
     telephone: true,

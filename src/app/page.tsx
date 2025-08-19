@@ -113,7 +113,7 @@ export default function HomePage() {
                 <Hammer className="w-12 h-12 text-white" />
               </div>
               <h1 className="text-5xl sm:text-7xl font-bold text-white mb-6 tracking-tight">
-                Lotus Contractor
+                Tary
               </h1>
               <p className="text-xl sm:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
                 Transform your flooring business with intelligent project management, 
@@ -318,9 +318,9 @@ export default function HomePage() {
             <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mr-3">
               <Hammer className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-white">Lotus Contractor</span>
+            <span className="text-2xl font-bold text-white">Tary</span>
           </div>
-          <p className="text-slate-400 mb-2">&copy; 2025 Lotus Contractor. All rights reserved.</p>
+          <p className="text-slate-400 mb-2">&copy; 2025 Tary Contractor. All rights reserved.</p>
           <p className="text-slate-500 text-sm">Professional flooring contractor management platform</p>
         </div>
       </footer>
