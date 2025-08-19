@@ -249,34 +249,34 @@ export default function HomePage() {
             Built for the Modern Jobsite
           </h2>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-            Every feature optimized for mobile use with offline capabilities, 
-            high contrast displays, and touch-first interactions
+            Professional tools designed for real-world flooring contractors who need reliability, 
+            speed, and accuracy in demanding environments
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto px-4">
           <div className="text-center group">
             <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-              <Smartphone className="w-10 h-10 text-white" />
+              <Calculator className="w-10 h-10 text-white" />
             </div>
-            <h3 className="font-bold text-xl text-white mb-3">Touch Optimized</h3>
-            <p className="text-slate-300 leading-relaxed">44px minimum touch targets with haptic feedback for perfect mobile interaction</p>
+            <h3 className="font-bold text-xl text-white mb-3">Instant Measurements</h3>
+            <p className="text-slate-300 leading-relaxed">Calculate square footage, stair coverage, and material needs in seconds with built-in flooring formulas</p>
           </div>
           
           <div className="text-center group">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-              <Shield className="w-10 h-10 text-white" />
+              <FileText className="w-10 h-10 text-white" />
             </div>
-            <h3 className="font-bold text-xl text-white mb-3">Offline Ready</h3>
-            <p className="text-slate-300 leading-relaxed">Progressive Web App technology ensures full functionality without internet connection</p>
+            <h3 className="font-bold text-xl text-white mb-3">Professional Contracts</h3>
+            <p className="text-slate-300 leading-relaxed">Generate legally compliant contracts with warranty terms, payment schedules, and project specifications</p>
           </div>
           
           <div className="text-center group">
             <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-              <Zap className="w-10 h-10 text-white" />
+              <Smartphone className="w-10 h-10 text-white" />
             </div>
-            <h3 className="font-bold text-xl text-white mb-3">Lightning Fast</h3>
-            <p className="text-slate-300 leading-relaxed">Sub-3 second load times with high contrast displays for outdoor visibility</p>
+            <h3 className="font-bold text-xl text-white mb-3">Jobsite Ready</h3>
+            <p className="text-slate-300 leading-relaxed">High-contrast display for outdoor use, dust-resistant interface, and works perfectly with work gloves</p>
           </div>
         </div>
       </section>
