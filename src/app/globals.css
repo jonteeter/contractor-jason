@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Smooth scrolling for better UX */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Better text rendering */
+  h1, h2, h3, h4, h5, h6 {
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
+  }
+}
+
+/* Custom styles for Lotus Contractor App */
+@layer components {
+  /* Mobile-first touch targets - minimum 44px for accessibility */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* High contrast for outdoor visibility */
+  .high-contrast {
+    @apply contrast-125 brightness-110;
+  }
+
+  /* Professional card styling */
+  .professional-card {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm;
+  }
+
+  /* Flooring material preview cards */
+  .floor-preview {
+    @apply relative overflow-hidden rounded-lg border-2 border-transparent transition-all duration-200 hover:border-primary hover:shadow-md;
+  }
+
+  .floor-preview.selected {
+    @apply border-primary shadow-md ring-2 ring-primary/20;
+  }
+
+  /* Form styling for mobile optimization */
+  .mobile-form {
+    @apply space-y-6 p-4;
+  }
+
+  .mobile-form input,
+  .mobile-form select,
+  .mobile-form textarea {
+    @apply touch-target text-base; /* Prevent zoom on iOS */
+  }
+
+  /* Loading states */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+
+  /* Professional gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary to-primary/80;
+  }
+
+  .gradient-secondary {
+    @apply bg-gradient-to-r from-secondary to-secondary/80;
+  }
+
+  /* Construction-themed colors */
+  .construction-orange {
+    @apply bg-orange-500 text-white;
+  }
+
+  .construction-blue {
+    @apply bg-blue-600 text-white;
+  }
+
+  .wood-brown {
+    @apply bg-amber-800 text-white;
+  }
+}
+
+/* Animation utilities */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Print styles for contracts */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    @apply text-black bg-white;
+  }
+
+  .professional-card {
+    @apply border border-gray-300 shadow-none;
+  }
+}
