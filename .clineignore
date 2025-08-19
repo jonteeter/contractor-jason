@@ -7,5 +7,3 @@ coverage
 **/*.lock
 ios
 android
-.env
-.env.*

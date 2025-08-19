@@ -1,8 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase configuration from memory bank
-const supabaseUrl = 'https://eonnbueqowenorscxugz.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvbm5idWVxb3dlbm9yc2N4dWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1NTU3MzUsImV4cCI6MjA3MTEzMTczNX0.Vqwr9rr3D6a0h1RX5XE_2eeJaoW19HN7sVtyaYSEgWE'
+// Supabase configuration from environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+// Validate environment variables
+if (!supabaseUrl) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+}
+
+if (!supabaseAnonKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
+}
 
 // Create Supabase client for client-side operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
