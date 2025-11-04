@@ -103,44 +103,44 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 safe-area-top">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-white/[0.03] bg-[radial-gradient(circle_at_center,_white_2px,_transparent_2px)] bg-[length:60px_60px]"></div>
         </div>
-        
-        <div className="relative py-20 sm:py-32 px-4">
-          <div className="text-center max-w-6xl mx-auto">
+
+        <div className="relative py-12 sm:py-20 lg:py-32 px-4 sm:px-6">
+          <div className="text-center max-w-4xl mx-auto">
             {/* Logo and Brand */}
-            <div className="mb-12">
-              <div className="mx-auto w-24 h-24 bg-gradient-to-br from-amber-500 to-amber-600 rounded-3xl flex items-center justify-center mb-6 shadow-2xl">
-                <Hammer className="w-12 h-12 text-white" />
+            <div className="mb-8 sm:mb-12">
+              <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl sm:rounded-3xl flex items-center justify-center mb-4 sm:mb-6 shadow-2xl active:scale-95 transition-transform">
+                <Hammer className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
               </div>
-              <h1 className="text-5xl sm:text-7xl font-bold text-white mb-6 tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 tracking-tight px-4">
                 Tary
               </h1>
-              <p className="text-xl sm:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-                Transform your flooring business with intelligent project management, 
+              <p className="text-lg sm:text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed px-4">
+                Transform your flooring business with intelligent project management,
                 instant estimates, and professional contract generation
               </p>
             </div>
 
             {/* Primary CTA */}
-            <div className="mb-16 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="mb-12 sm:mb-16 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center px-4">
               <Button
                 size="lg"
-                className="touch-target text-xl px-12 py-8 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-200"
+                className="w-full sm:w-auto touch-target text-lg sm:text-xl px-8 sm:px-12 py-6 sm:py-8 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white font-semibold rounded-xl sm:rounded-2xl shadow-2xl transition-all duration-200"
                 onClick={handleStartProject}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3" />
+                    <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-white mr-3" />
                     Loading...
                   </>
                 ) : (
                   <>
                     {user ? 'Go to Dashboard' : 'Get Started'}
-                    <ArrowRight className="ml-3 w-6 h-6" />
+                    <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 sm:w-6 sm:h-6" />
                   </>
                 )}
               </Button>
@@ -149,29 +149,29 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="touch-target text-xl px-12 py-8 bg-white/10 border-2 border-white/20 hover:bg-white/20 text-white font-semibold rounded-2xl backdrop-blur-sm"
+                  className="w-full sm:w-auto touch-target text-lg sm:text-xl px-8 sm:px-12 py-6 sm:py-8 bg-white/10 border-2 border-white/20 hover:bg-white/20 active:scale-95 text-white font-semibold rounded-xl sm:rounded-2xl backdrop-blur-sm transition-all duration-200"
                   onClick={() => window.location.href = '/login'}
                 >
-                  <LogIn className="mr-3 w-6 h-6" />
+                  <LogIn className="mr-2 sm:mr-3 w-5 h-5 sm:w-6 sm:h-6" />
                   Sign In
                 </Button>
               )}
             </div>
-            <p className="text-slate-400 text-sm">Professional contractor management • Start creating estimates today</p>
+            <p className="text-slate-400 text-xs sm:text-sm px-4 mb-8 sm:mb-12">Professional contractor management • Start creating estimates today</p>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-4">
               {stats.map((stat, index) => (
-                <div 
+                <div
                   key={stat.label}
-                  className="text-center animate-fade-in"
+                  className="text-center animate-fade-in p-3 sm:p-4 rounded-xl bg-white/5 backdrop-blur-sm"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="flex items-center justify-center mb-3">
-                    <stat.icon className="w-8 h-8 text-amber-400" />
+                  <div className="flex items-center justify-center mb-2 sm:mb-3">
+                    <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-amber-400" />
                   </div>
-                  <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-slate-400 text-sm">{stat.label}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
+                  <div className="text-slate-400 text-xs sm:text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -180,40 +180,40 @@ export default function HomePage() {
       </section>
 
       {/* Floor Types Showcase */}
-      <section className="py-20 bg-white">
-        <div className="text-center mb-16 px-4">
-          <h2 className="text-4xl font-bold text-slate-900 mb-6">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16 px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 sm:mb-6">
             Premium Flooring Solutions
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto">
             Professional-grade materials with transparent pricing and instant calculations
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto px-4 sm:px-6">
           {floorTypes.map((floor, index) => (
-            <div 
+            <div
               key={floor.name}
-              className="group relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 animate-slide-up"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all duration-300 transform sm:hover:-translate-y-2 animate-slide-up"
               style={{ animationDelay: `${index * 150}ms` }}
             >
               <div className={`aspect-[4/3] bg-gradient-to-br ${floor.gradient} flex items-center justify-center relative`}>
                 <div className="absolute inset-0 bg-black/20"></div>
-                <div className="relative text-center p-8">
-                  <div className={`text-6xl font-bold ${floor.textColor} mb-2`}>
+                <div className="relative text-center p-6 sm:p-8">
+                  <div className={`text-4xl sm:text-5xl lg:text-6xl font-bold ${floor.textColor} mb-2`}>
                     {floor.name.split(' ')[0]}
                   </div>
-                  <div className={`text-xl ${floor.textColor} opacity-90`}>
+                  <div className={`text-lg sm:text-xl ${floor.textColor} opacity-90`}>
                     {floor.name.split(' ').slice(1).join(' ')}
                   </div>
                 </div>
               </div>
-              <div className="p-8 bg-white">
-                <h3 className="font-bold text-xl text-slate-900 mb-3">{floor.name}</h3>
-                <p className="text-slate-600 mb-4 leading-relaxed">{floor.description}</p>
+              <div className="p-6 sm:p-8 bg-white">
+                <h3 className="font-bold text-lg sm:text-xl text-slate-900 mb-3">{floor.name}</h3>
+                <p className="text-sm sm:text-base text-slate-600 mb-4 leading-relaxed">{floor.description}</p>
                 <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-amber-600">{floor.basePrice}<span className="text-sm text-slate-500">/sq ft</span></div>
-                  <div className="text-sm text-slate-500">Starting price</div>
+                  <div className="text-xl sm:text-2xl font-bold text-amber-600">{floor.basePrice}<span className="text-xs sm:text-sm text-slate-500">/sq ft</span></div>
+                  <div className="text-xs sm:text-sm text-slate-500">Starting price</div>
                 </div>
               </div>
             </div>
@@ -222,32 +222,32 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-slate-50">
-        <div className="text-center mb-16 px-4">
-          <h2 className="text-4xl font-bold text-slate-900 mb-6">
+      <section className="py-12 sm:py-16 lg:py-20 bg-slate-50">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16 px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 sm:mb-6">
             Everything You Need to Scale
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto">
             Comprehensive tools designed for modern flooring contractors who demand efficiency and professionalism
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto px-4 sm:px-6">
           {features.map((feature, index) => (
-            <div 
+            <div
               key={feature.title}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group animate-fade-in"
+              className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-300 group animate-fade-in"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="flex items-start space-x-4">
-                <div className="p-4 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
-                  <feature.icon className="w-8 h-8 text-white" />
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <div className="p-3 sm:p-4 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl sm:rounded-2xl flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
+                  <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-xl text-slate-900 mb-2">{feature.title}</h3>
-                  <p className="text-slate-600 mb-3 leading-relaxed">{feature.description}</p>
-                  <div className="inline-flex items-center text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
-                    <TrendingUp className="w-4 h-4 mr-1" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg sm:text-xl text-slate-900 mb-2">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-slate-600 mb-3 leading-relaxed">{feature.description}</p>
+                  <div className="inline-flex items-center text-xs sm:text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+                    <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     {feature.highlight}
                   </div>
                 </div>
@@ -258,67 +258,67 @@ export default function HomePage() {
       </section>
 
       {/* Mobile-First Showcase */}
-      <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center mb-16 px-4">
-          <h2 className="text-4xl font-bold text-white mb-6">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16 px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
             Built for the Modern Jobsite
           </h2>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-            Professional tools designed for real-world flooring contractors who need reliability, 
+          <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto">
+            Professional tools designed for real-world flooring contractors who need reliability,
             speed, and accuracy in demanding environments
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto px-4">
-          <div className="text-center group">
-            <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-              <Calculator className="w-10 h-10 text-white" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center group p-6 sm:p-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 active:scale-95 transition-transform duration-200">
+              <Calculator className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
-            <h3 className="font-bold text-xl text-white mb-3">Instant Measurements</h3>
-            <p className="text-slate-300 leading-relaxed">Calculate square footage, stair coverage, and material needs in seconds with built-in flooring formulas</p>
+            <h3 className="font-bold text-lg sm:text-xl text-white mb-3">Instant Measurements</h3>
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">Calculate square footage, stair coverage, and material needs in seconds with built-in flooring formulas</p>
           </div>
-          
-          <div className="text-center group">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-              <FileText className="w-10 h-10 text-white" />
+
+          <div className="text-center group p-6 sm:p-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 active:scale-95 transition-transform duration-200">
+              <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
-            <h3 className="font-bold text-xl text-white mb-3">Professional Contracts</h3>
-            <p className="text-slate-300 leading-relaxed">Generate legally compliant contracts with warranty terms, payment schedules, and project specifications</p>
+            <h3 className="font-bold text-lg sm:text-xl text-white mb-3">Professional Contracts</h3>
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">Generate legally compliant contracts with warranty terms, payment schedules, and project specifications</p>
           </div>
-          
-          <div className="text-center group">
-            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-200">
-              <Smartphone className="w-10 h-10 text-white" />
+
+          <div className="text-center group p-6 sm:p-0 sm:col-span-2 md:col-span-1">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 active:scale-95 transition-transform duration-200">
+              <Smartphone className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
-            <h3 className="font-bold text-xl text-white mb-3">Jobsite Ready</h3>
-            <p className="text-slate-300 leading-relaxed">High-contrast display for outdoor use, dust-resistant interface, and works perfectly with work gloves</p>
+            <h3 className="font-bold text-lg sm:text-xl text-white mb-3">Jobsite Ready</h3>
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">High-contrast display for outdoor use, dust-resistant interface, and works perfectly with work gloves</p>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="text-center px-4">
-          <h2 className="text-4xl font-bold text-slate-900 mb-6">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <div className="text-center px-4 sm:px-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 sm:mb-6">
             Ready to Transform Your Business?
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-12">
+          <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-12">
             Join hundreds of contractors who have streamlined their operations and increased profitability
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="touch-target text-lg px-8 py-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl shadow-lg"
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center max-w-2xl mx-auto px-4">
+            <Button
+              size="lg"
+              className="w-full sm:w-auto touch-target text-base sm:text-lg px-8 py-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white font-semibold rounded-xl shadow-lg transition-all duration-200"
               onClick={handleStartProject}
             >
               Start Free Demo
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="outline"
-              className="touch-target text-lg px-8 py-6 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl"
+              className="w-full sm:w-auto touch-target text-base sm:text-lg px-8 py-6 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-95 rounded-xl transition-all duration-200"
             >
               Schedule Consultation
             </Button>
@@ -327,16 +327,16 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-slate-900 border-t border-slate-800">
-        <div className="text-center px-4">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mr-3">
-              <Hammer className="w-6 h-6 text-white" />
+      <footer className="py-8 sm:py-12 bg-slate-900 border-t border-slate-800 safe-area-bottom">
+        <div className="text-center px-4 sm:px-6">
+          <div className="flex items-center justify-center mb-4 sm:mb-6">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 active:scale-95 transition-transform">
+              <Hammer className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-white">Tary</span>
+            <span className="text-xl sm:text-2xl font-bold text-white">Tary</span>
           </div>
-          <p className="text-slate-400 mb-2">&copy; 2025 Tary Contractor. All rights reserved.</p>
-          <p className="text-slate-500 text-sm">Professional flooring contractor management platform</p>
+          <p className="text-slate-400 text-sm sm:text-base mb-2">&copy; 2025 Tary Contractor. All rights reserved.</p>
+          <p className="text-slate-500 text-xs sm:text-sm">Professional flooring contractor management platform</p>
         </div>
       </footer>
     </div>

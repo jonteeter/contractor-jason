@@ -69,12 +69,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
-          <div className="min-h-screen bg-background">
-            {/* Main app container with safe area support for mobile devices */}
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
-          </div>
+          {children}
         </AuthProvider>
       </body>
     </html>

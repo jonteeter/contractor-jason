@@ -53,20 +53,48 @@
   * {
     @apply border-border;
   }
+
+  html {
+    /* Smooth scrolling for better UX */
+    scroll-behavior: smooth;
+    /* Prevent pull-to-refresh on mobile browsers */
+    overscroll-behavior-y: contain;
+    /* Full height on mobile */
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Better font rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Full height on mobile */
+    min-height: 100%;
+    min-height: -webkit-fill-available;
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
   }
-  
-  /* Smooth scrolling for better UX */
-  html {
-    scroll-behavior: smooth;
-  }
-  
+
   /* Better text rendering */
   h1, h2, h3, h4, h5, h6 {
     text-rendering: optimizeLegibility;
     font-feature-settings: "kern" 1;
+  }
+
+  /* Better tap targets for mobile */
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Remove default focus outline, we'll add our own */
+  *:focus {
+    outline: none;
+  }
+
+  /* Add visible focus for keyboard navigation */
+  *:focus-visible {
+    @apply ring-2 ring-amber-500 ring-offset-2 outline-none;
   }
 }
 
@@ -77,19 +105,53 @@
     @apply min-h-[44px] min-w-[44px];
   }
 
+  /* Safe area support for notched devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Mobile-first container with safe areas */
+  .mobile-container {
+    @apply w-full px-4 safe-area-x;
+  }
+
+  /* Better mobile scroll containers */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
   /* High contrast for outdoor visibility */
   .high-contrast {
     @apply contrast-125 brightness-110;
   }
 
-  /* Professional card styling */
+  /* Professional card styling with better mobile spacing */
   .professional-card {
     @apply bg-card text-card-foreground rounded-lg border shadow-sm;
   }
 
+  /* Mobile-optimized card */
+  .mobile-card {
+    @apply professional-card p-4 sm:p-6 transition-all duration-200 active:scale-[0.98];
+  }
+
   /* Flooring material preview cards */
   .floor-preview {
-    @apply relative overflow-hidden rounded-lg border-2 border-transparent transition-all duration-200 hover:border-primary hover:shadow-md;
+    @apply relative overflow-hidden rounded-lg border-2 border-transparent transition-all duration-200 active:scale-95 touch-target;
+  }
+
+  .floor-preview:hover {
+    @apply border-primary shadow-md;
   }
 
   .floor-preview.selected {
@@ -98,13 +160,26 @@
 
   /* Form styling for mobile optimization */
   .mobile-form {
-    @apply space-y-6 p-4;
+    @apply space-y-4 sm:space-y-6 p-4;
   }
 
   .mobile-form input,
   .mobile-form select,
   .mobile-form textarea {
     @apply touch-target text-base; /* Prevent zoom on iOS */
+  }
+
+  /* Mobile-friendly button styles */
+  .mobile-button {
+    @apply touch-target px-6 py-3 rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .mobile-button-primary {
+    @apply mobile-button bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30;
+  }
+
+  .mobile-button-secondary {
+    @apply mobile-button bg-white text-slate-700 border-2 border-slate-300;
   }
 
   /* Loading states */
@@ -132,6 +207,23 @@
 
   .wood-brown {
     @apply bg-amber-800 text-white;
+  }
+
+  /* Mobile-first grid helpers */
+  .grid-mobile-1 {
+    @apply grid grid-cols-1;
+  }
+
+  .grid-mobile-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2;
+  }
+
+  .grid-mobile-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-mobile-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
   }
 }
 
