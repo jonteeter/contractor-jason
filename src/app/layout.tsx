@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -67,12 +68,14 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <div className="min-h-screen bg-background">
-          {/* Main app container with safe area support for mobile devices */}
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {children}
+        <AuthProvider>
+          <div className="min-h-screen bg-background">
+            {/* Main app container with safe area support for mobile devices */}
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              {children}
+            </div>
           </div>
-        </div>
+        </AuthProvider>
         
         {/* Service Worker registration script will be added here */}
         <script

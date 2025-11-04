@@ -1,412 +1,277 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { 
+import ContractEditor from '@/components/contracts/ContractEditor'
+import ContractTemplate from '@/components/contracts/ContractTemplate'
+import {
   ArrowLeft,
   Download,
-  Mail,
-  Share2,
   CheckCircle,
   DollarSign,
-  Calculator,
-  Home,
-  TrendingUp,
+  Edit2,
+  Save,
+  X,
   FileText,
-  Calendar,
   User,
   Phone,
   MapPin,
   Palette,
-  Ruler,
-  Clock,
-  Shield
+  Ruler
 } from 'lucide-react'
 
-// Mock data - in real app this would come from previous steps
-const mockEstimateData = {
-  customer: {
-    name: 'John Smith',
-    email: 'john@example.com',
-    phone: '(555) 123-4567',
-    address: '123 Main Street\nAnytown, ST 12345',
-    company: 'ABC Construction'
-  },
-  project: {
-    type: 'New Installation',
-    floorType: 'Red Oak',
-    floorSize: '2.5"',
-    finish: 'Semi-Gloss',
-    stain: 'Golden Oak'
-  },
-  measurements: {
-    rooms: [
-      { name: 'Room 1', dimensions: '12.5\' × 10.0\'', sqft: 125.0 },
-      { name: 'Room 2', dimensions: '15.0\' × 12.0\'', sqft: 180.0 }
-    ],
-    stairs: { treads: 12, risers: 13, sqft: 55.5 },
-    totalSqft: 360.5
-  },
-  pricing: {
-    materialCost: 3065.25,
-    laborCost: 1802.50,
-    finishCost: 541.75,
-    subtotal: 5409.50,
-    tax: 432.76,
-    total: 5842.26
-  },
-  timeline: {
-    startDate: '2025-02-15',
-    completionDate: '2025-02-22',
-    duration: '5-7 business days'
-  }
+interface Customer {
+  id: string
+  name: string
+  email: string
+  phone: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
+}
+
+interface Project {
+  id: string
+  project_name: string
+  floor_type: string
+  floor_size: string
+  finish_type: string
+  stain_type: string | null
+  stair_treads: number
+  stair_risers: number
+  room_1_length: number | null
+  room_1_width: number | null
+  room_2_length: number | null
+  room_2_width: number | null
+  room_3_length: number | null
+  room_3_width: number | null
+  total_square_feet: number
+  estimated_cost: number
+  status: string
+  created_at: string
+  work_description: string | null
+  intro_message: string | null
+  estimated_days: number | null
+  start_date: string | null
+  completion_date: string | null
+  customer: Customer
 }
 
 export default function EstimatePage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [projectId, setProjectId] = useState<string | null | undefined>(undefined)
+
+  const [project, setProject] = useState<Project | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'estimate' | 'contract'>('estimate')
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editingContract, setEditingContract] = useState(false)
+  const [editedCost, setEditedCost] = useState('')
+  const [editedIntro, setEditedIntro] = useState('')
+  const [editedWorkDescription, setEditedWorkDescription] = useState('')
+  const [editedDays, setEditedDays] = useState('')
+  const [editedStartDate, setEditedStartDate] = useState('')
+  const [editedCompletionDate, setEditedCompletionDate] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const handleSendEmail = () => {
-    setShowSuccess(true)
-    setTimeout(() => setShowSuccess(false), 3000)
+  // Get project ID from URL or localStorage (client-side only)
+  useEffect(() => {
+    const urlProjectId = searchParams.get('projectId')
+    const storedProjectId = typeof window !== 'undefined' ? localStorage.getItem('currentProjectId') : null
+    setProjectId(urlProjectId || storedProjectId)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (projectId) {
+      loadProject()
+    } else if (projectId === null) {
+      // Only set error if we've checked and found no project ID (null means we checked, undefined means we haven't checked yet)
+      setError('No project ID provided')
+      setLoading(false)
+    }
+  }, [projectId])
+
+  const loadProject = async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`)
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to load project')
+      }
+
+      setProject(result.project)
+      setEditedCost(result.project.estimated_cost.toString())
+      setEditedIntro(result.project.intro_message || 'Thank you for choosing The Best Hardwood Flooring Co. for your flooring and home improvement needs. Below is a breakdown of the work as we discussed. Please review the information and let me know if I missed anything.')
+      setEditedWorkDescription(result.project.work_description || '')
+      setEditedDays(result.project.estimated_days?.toString() || '')
+      setEditedStartDate(result.project.start_date || '')
+      setEditedCompletionDate(result.project.completion_date || '')
+    } catch (err) {
+      console.error('Load project error:', err)
+      setError((err as Error).message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDownloadPDF = () => {
-    // In real app, this would generate and download a PDF
-    console.log('Downloading PDF estimate...')
+  const handleSaveCost = async () => {
+    if (!project) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          estimated_cost: parseFloat(editedCost)
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update cost')
+      }
+
+      setProject({ ...project, estimated_cost: parseFloat(editedCost) })
+      setEditing(false)
+    } catch (err) {
+      console.error('Save error:', err)
+      alert('Failed to save changes')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleGenerateContract = () => {
-    setActiveTab('contract')
+  const handleSaveContractDetails = async () => {
+    if (!project) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intro_message: editedIntro,
+          work_description: editedWorkDescription,
+          estimated_days: editedDays ? parseInt(editedDays) : null,
+          start_date: editedStartDate || null,
+          completion_date: editedCompletionDate || null,
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update contract details')
+      }
+
+      const result = await response.json()
+      setProject(result.project)
+      setEditingContract(false)
+    } catch (err) {
+      console.error('Save error:', err)
+      alert('Failed to save changes')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleBack = () => {
-    window.location.href = '/measurements'
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(amount)
   }
 
-  const renderEstimate = () => (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-3xl border-2 border-amber-200 p-8">
+  const getFloorTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      red_oak: 'Red Oak',
+      white_oak: 'White Oak',
+      linoleum: 'Linoleum'
+    }
+    return labels[type] || type
+  }
+
+  const getFloorSizeLabel = (size: string) => {
+    const labels: Record<string, string> = {
+      '2_inch': '2"',
+      '2_5_inch': '2.5"',
+      '3_inch': '3"'
+    }
+    return labels[size] || size
+  }
+
+  const getFinishTypeLabel = (finish: string) => {
+    const labels: Record<string, string> = {
+      stain: 'Stain',
+      gloss: 'Gloss',
+      semi_gloss: 'Semi-Gloss',
+      option: 'Custom Option'
+    }
+    return labels[finish] || finish
+  }
+
+  const getStainTypeLabel = (stain: string | null) => {
+    if (!stain) return 'None'
+    const labels: Record<string, string> = {
+      natural: 'Natural',
+      golden_oak: 'Golden Oak',
+      spice_brown: 'Spice Brown'
+    }
+    return labels[stain] || stain
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
         <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <FileText className="w-12 h-12 text-amber-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Project Estimate</h1>
-          <p className="text-lg text-slate-600">Professional flooring installation estimate</p>
-          <div className="mt-4 text-sm text-slate-500">
-            Estimate #EST-2025-001 • Generated {new Date().toLocaleDateString()}
-          </div>
+          <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading estimate...</p>
         </div>
       </div>
+    )
+  }
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Customer Information */}
-        <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-            <User className="w-6 h-6 text-amber-600 mr-3" />
-            Customer Information
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <User className="w-5 h-5 text-slate-400 mt-1" />
-              <div>
-                <div className="font-medium text-slate-900">{mockEstimateData.customer.name}</div>
-                {mockEstimateData.customer.company && (
-                  <div className="text-sm text-slate-600">{mockEstimateData.customer.company}</div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Phone className="w-5 h-5 text-slate-400" />
-              <span className="text-slate-700">{mockEstimateData.customer.phone}</span>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Mail className="w-5 h-5 text-slate-400" />
-              <span className="text-slate-700">{mockEstimateData.customer.email}</span>
-            </div>
-            
-            <div className="flex items-start space-x-3">
-              <MapPin className="w-5 h-5 text-slate-400 mt-1" />
-              <div className="text-slate-700 whitespace-pre-line">{mockEstimateData.customer.address}</div>
-            </div>
+  if (error || !project) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="text-red-500 mb-4">
+            <X className="w-16 h-16 mx-auto" />
           </div>
-        </div>
-
-        {/* Project Details */}
-        <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-            <Palette className="w-6 h-6 text-amber-600 mr-3" />
-            Project Specifications
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-slate-600">Project Type:</span>
-              <span className="font-medium text-slate-900">{mockEstimateData.project.type}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-slate-600">Floor Type:</span>
-              <span className="font-medium text-slate-900">{mockEstimateData.project.floorType}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-slate-600">Plank Size:</span>
-              <span className="font-medium text-slate-900">{mockEstimateData.project.floorSize}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-slate-600">Finish:</span>
-              <span className="font-medium text-slate-900">{mockEstimateData.project.finish}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-slate-600">Stain Color:</span>
-              <span className="font-medium text-slate-900">{mockEstimateData.project.stain}</span>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Error Loading Estimate</h2>
+          <p className="text-slate-600 mb-6">{error || 'Project not found'}</p>
+          <Button onClick={() => router.push('/projects')} className="bg-amber-500 hover:bg-amber-600">
+            View All Projects
+          </Button>
         </div>
       </div>
+    )
+  }
 
-      {/* Measurements Summary */}
-      <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-          <Ruler className="w-6 h-6 text-amber-600 mr-3" />
-          Area Measurements
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="font-medium text-slate-900 mb-4 flex items-center">
-              <Home className="w-5 h-5 text-slate-600 mr-2" />
-              Rooms
-            </h3>
-            <div className="space-y-3">
-              {mockEstimateData.measurements.rooms.map((room, index) => (
-                <div key={index} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-b-0">
-                  <div>
-                    <span className="font-medium text-slate-900">{room.name}</span>
-                    <span className="text-slate-500 ml-2">({room.dimensions})</span>
-                  </div>
-                  <span className="font-medium text-slate-900">{room.sqft.toFixed(1)} sq ft</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="font-medium text-slate-900 mb-4 flex items-center">
-              <TrendingUp className="w-5 h-5 text-slate-600 mr-2" />
-              Staircase
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2">
-                <div>
-                  <span className="font-medium text-slate-900">Treads & Risers</span>
-                  <span className="text-slate-500 ml-2">({mockEstimateData.measurements.stairs.treads} treads, {mockEstimateData.measurements.stairs.risers} risers)</span>
-                </div>
-                <span className="font-medium text-slate-900">{mockEstimateData.measurements.stairs.sqft.toFixed(1)} sq ft</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-6 pt-6 border-t-2 border-slate-200">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-bold text-slate-900">Total Project Area</span>
-            <span className="text-2xl font-bold text-amber-600">{mockEstimateData.measurements.totalSqft.toFixed(1)} sq ft</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Cost Breakdown */}
-      <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-          <Calculator className="w-6 h-6 text-amber-600 mr-3" />
-          Cost Breakdown
-        </h2>
-        
-        <div className="space-y-4">
-          <div className="flex justify-between items-center py-3 border-b border-slate-100">
-            <span className="text-slate-700">Materials & Flooring</span>
-            <span className="font-medium text-slate-900">${mockEstimateData.pricing.materialCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-          </div>
-          
-          <div className="flex justify-between items-center py-3 border-b border-slate-100">
-            <span className="text-slate-700">Labor & Installation</span>
-            <span className="font-medium text-slate-900">${mockEstimateData.pricing.laborCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-          </div>
-          
-          <div className="flex justify-between items-center py-3 border-b border-slate-100">
-            <span className="text-slate-700">Finish & Staining</span>
-            <span className="font-medium text-slate-900">${mockEstimateData.pricing.finishCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-          </div>
-          
-          <div className="flex justify-between items-center py-3 border-b border-slate-200">
-            <span className="font-medium text-slate-900">Subtotal</span>
-            <span className="font-medium text-slate-900">${mockEstimateData.pricing.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-          </div>
-          
-          <div className="flex justify-between items-center py-3 border-b border-slate-200">
-            <span className="text-slate-700">Tax (8%)</span>
-            <span className="font-medium text-slate-900">${mockEstimateData.pricing.tax.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-          </div>
-          
-          <div className="flex justify-between items-center py-4 bg-amber-50 rounded-xl px-4 border-2 border-amber-200">
-            <span className="text-xl font-bold text-slate-900">Total Project Cost</span>
-            <span className="text-2xl font-bold text-amber-700">${mockEstimateData.pricing.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Timeline & Terms */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-            <Calendar className="w-6 h-6 text-amber-600 mr-3" />
-            Project Timeline
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-slate-600">Estimated Start:</span>
-              <span className="font-medium text-slate-900">{new Date(mockEstimateData.timeline.startDate).toLocaleDateString()}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-slate-600">Estimated Completion:</span>
-              <span className="font-medium text-slate-900">{new Date(mockEstimateData.timeline.completionDate).toLocaleDateString()}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-slate-600">Duration:</span>
-              <span className="font-medium text-slate-900">{mockEstimateData.timeline.duration}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-            <Shield className="w-6 h-6 text-amber-600 mr-3" />
-            Warranty & Terms
-          </h2>
-          
-          <div className="space-y-3 text-sm text-slate-600">
-            <div className="flex items-start space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <span>5-year warranty on installation</span>
-            </div>
-            <div className="flex items-start space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <span>Manufacturer warranty on materials</span>
-            </div>
-            <div className="flex items-start space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <span>50% deposit required to start</span>
-            </div>
-            <div className="flex items-start space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <span>Final payment due upon completion</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderContract = () => (
-    <div className="space-y-8">
-      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-3xl border-2 border-green-200 p-8">
-        <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <FileText className="w-12 h-12 text-green-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Service Contract</h1>
-          <p className="text-lg text-slate-600">Ready for signature and project commencement</p>
-          <div className="mt-4 text-sm text-slate-500">
-            Contract #CON-2025-001 • Generated {new Date().toLocaleDateString()}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-        <div className="prose max-w-none">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Flooring Installation Contract</h2>
-          
-          <div className="space-y-6 text-sm text-slate-700 leading-relaxed">
-            <p>
-              This contract is entered into between <strong>Tomahawk Wooden Floors</strong> ("Contractor") 
-              and <strong>{mockEstimateData.customer.name}</strong> ("Customer") for flooring installation 
-              services at <strong>{mockEstimateData.customer.address.replace('\n', ', ')}</strong>.
-            </p>
-
-            <div>
-              <h3 className="font-bold text-slate-900 mb-2">Scope of Work:</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Installation of {mockEstimateData.project.floorType} flooring ({mockEstimateData.project.floorSize} planks)</li>
-                <li>Application of {mockEstimateData.project.finish} finish with {mockEstimateData.project.stain} stain</li>
-                <li>Coverage area: {mockEstimateData.measurements.totalSqft.toFixed(1)} square feet</li>
-                <li>Staircase installation: {mockEstimateData.measurements.stairs.treads} treads and {mockEstimateData.measurements.stairs.risers} risers</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-slate-900 mb-2">Payment Terms:</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Total contract amount: <strong>${mockEstimateData.pricing.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></li>
-                <li>50% deposit required upon contract signing: <strong>${(mockEstimateData.pricing.total * 0.5).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></li>
-                <li>Remaining balance due upon project completion: <strong>${(mockEstimateData.pricing.total * 0.5).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-slate-900 mb-2">Timeline:</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Project start date: {new Date(mockEstimateData.timeline.startDate).toLocaleDateString()}</li>
-                <li>Estimated completion: {new Date(mockEstimateData.timeline.completionDate).toLocaleDateString()}</li>
-                <li>Duration: {mockEstimateData.timeline.duration}</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-slate-900 mb-2">Warranty:</h3>
-              <ul className="list-disc list-inside space-y-1">
-                <li>5-year warranty on installation workmanship</li>
-                <li>Manufacturer warranty applies to all materials</li>
-                <li>Warranty covers defects in materials and workmanship under normal use</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-8 border-t-2 border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="font-bold text-slate-900 mb-4">Customer Signature:</h4>
-                <div className="border-b-2 border-slate-300 pb-2 mb-2 h-12"></div>
-                <div className="text-sm text-slate-600">
-                  {mockEstimateData.customer.name}<br/>
-                  Date: _______________
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-bold text-slate-900 mb-4">Contractor Signature:</h4>
-                <div className="border-b-2 border-slate-300 pb-2 mb-2 h-12"></div>
-                <div className="text-sm text-slate-600">
-                  Tomahawk Wooden Floors<br/>
-                  Date: _______________
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  const rooms = [
+    project.room_1_length && project.room_1_width ? {
+      name: 'Room 1',
+      length: project.room_1_length,
+      width: project.room_1_width,
+      sqft: project.room_1_length * project.room_1_width
+    } : null,
+    project.room_2_length && project.room_2_width ? {
+      name: 'Room 2',
+      length: project.room_2_length,
+      width: project.room_2_width,
+      sqft: project.room_2_length * project.room_2_width
+    } : null,
+    project.room_3_length && project.room_3_width ? {
+      name: 'Room 3',
+      length: project.room_3_length,
+      width: project.room_3_width,
+      sqft: project.room_3_length * project.room_3_width
+    } : null,
+  ].filter(Boolean)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
@@ -416,95 +281,289 @@ export default function EstimatePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={handleBack}
+                onClick={() => router.push('/projects')}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
-              <h1 className="text-xl font-bold text-slate-900">
-                {activeTab === 'estimate' ? 'Project Estimate' : 'Service Contract'}
-              </h1>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900">Project Estimate</h1>
+                <p className="text-sm text-slate-600">{project.customer.name}</p>
+              </div>
             </div>
-            
-            {/* Tab Navigation */}
-            <div className="flex items-center space-x-2 bg-slate-100 rounded-lg p-1">
-              <button
+
+            <div className="flex items-center space-x-2">
+              <Button
                 onClick={() => setActiveTab('estimate')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'estimate'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                variant={activeTab === 'estimate' ? 'default' : 'outline'}
+                className={activeTab === 'estimate' ? 'bg-amber-500 hover:bg-amber-600' : ''}
               >
                 Estimate
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setActiveTab('contract')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'contract'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                variant={activeTab === 'contract' ? 'default' : 'outline'}
+                className={activeTab === 'contract' ? 'bg-amber-500 hover:bg-amber-600' : ''}
               >
                 Contract
-              </button>
+              </Button>
+              <Button
+                variant="outline"
+                className="text-amber-600 border-amber-600 hover:bg-amber-50"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Success Message */}
-      {showSuccess && (
-        <div className="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5" />
-            <span>Estimate sent successfully!</span>
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        {activeTab === 'estimate' ? (
+          <div className="bg-white rounded-xl shadow-lg">
+            {/* Estimate Header */}
+            <div className="border-b border-slate-200 p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                    The Best Hardwood Flooring Co.
+                  </h2>
+                  <p className="text-slate-600">Jason W. Dixon</p>
+                  <p className="text-slate-600">708-762-1003</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-slate-500">Estimate Date</p>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {new Date(project.created_at).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 mb-2 flex items-center">
+                    <User className="w-4 h-4 mr-2 text-amber-500" />
+                    Customer Information
+                  </h3>
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium text-slate-900">{project.customer.name}</p>
+                    <p className="text-slate-600">{project.customer.email}</p>
+                    <p className="text-slate-600">{project.customer.phone}</p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 mb-2 flex items-center">
+                    <MapPin className="w-4 h-4 mr-2 text-amber-500" />
+                    Project Address
+                  </h3>
+                  <div className="space-y-1 text-sm text-slate-600">
+                    <p>{project.customer.address}</p>
+                    <p>{project.customer.city}, {project.customer.state} {project.customer.zip_code}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Project Details */}
+            <div className="border-b border-slate-200 p-8">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Project Specifications</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Palette className="w-4 h-4 text-amber-500 mr-2" />
+                    <p className="text-xs text-slate-500">Floor Type</p>
+                  </div>
+                  <p className="font-semibold text-slate-900">{getFloorTypeLabel(project.floor_type)}</p>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Ruler className="w-4 h-4 text-amber-500 mr-2" />
+                    <p className="text-xs text-slate-500">Size</p>
+                  </div>
+                  <p className="font-semibold text-slate-900">{getFloorSizeLabel(project.floor_size)}</p>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <FileText className="w-4 h-4 text-amber-500 mr-2" />
+                    <p className="text-xs text-slate-500">Finish</p>
+                  </div>
+                  <p className="font-semibold text-slate-900">{getFinishTypeLabel(project.finish_type)}</p>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <Palette className="w-4 h-4 text-amber-500 mr-2" />
+                    <p className="text-xs text-slate-500">Stain</p>
+                  </div>
+                  <p className="font-semibold text-slate-900">{getStainTypeLabel(project.stain_type)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Measurements */}
+            <div className="border-b border-slate-200 p-8">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Measurements</h3>
+              <div className="space-y-3">
+                {rooms.map((room) => (
+                  <div key={room!.name} className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <span className="text-slate-700">{room!.name}</span>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-slate-500">{room!.length}' × {room!.width}'</span>
+                      <span className="font-semibold text-slate-900">{room!.sqft.toFixed(1)} sq ft</span>
+                    </div>
+                  </div>
+                ))}
+                {project.stair_treads > 0 && (
+                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <span className="text-slate-700">Stairs</span>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-slate-500">
+                        {project.stair_treads} treads, {project.stair_risers} risers
+                      </span>
+                      <span className="font-semibold text-slate-900">
+                        {((project.stair_treads * 3) + (project.stair_risers * 1.5)).toFixed(1)} sq ft
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between py-3 bg-amber-50 px-4 rounded-lg">
+                  <span className="font-semibold text-slate-900">Total Square Footage</span>
+                  <span className="text-xl font-bold text-amber-600">{project.total_square_feet.toFixed(1)} sq ft</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cost Summary */}
+            <div className="p-8">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Cost Summary</h3>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <span className="text-slate-700">Materials & Labor</span>
+                  <span className="font-semibold text-slate-900">Included</span>
+                </div>
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <span className="text-slate-700">Total Square Footage</span>
+                  <span className="font-semibold text-slate-900">{project.total_square_feet.toFixed(1)} sq ft</span>
+                </div>
+
+                <div className="flex items-center justify-between py-4 bg-gradient-to-r from-amber-50 to-amber-100 px-6 rounded-lg mt-4">
+                  <div className="flex items-center">
+                    <DollarSign className="w-6 h-6 text-amber-600 mr-2" />
+                    <span className="text-lg font-bold text-slate-900">Total Project Cost</span>
+                  </div>
+                  {editing ? (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg font-bold text-amber-600">$</span>
+                      <input
+                        type="number"
+                        value={editedCost}
+                        onChange={(e) => setEditedCost(e.target.value)}
+                        className="w-32 px-3 py-2 border border-amber-300 rounded-lg text-lg font-bold text-amber-600 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        step="0.01"
+                      />
+                      <Button
+                        onClick={handleSaveCost}
+                        disabled={saving}
+                        size="sm"
+                        className="bg-green-500 hover:bg-green-600 text-white"
+                      >
+                        <Save className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditing(false)
+                          setEditedCost(project.estimated_cost.toString())
+                        }}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl font-bold text-amber-600">
+                        {formatCurrency(project.estimated_cost)}
+                      </span>
+                      <Button
+                        onClick={() => setEditing(true)}
+                        size="sm"
+                        variant="ghost"
+                        className="text-amber-600 hover:bg-amber-100"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> This is an estimate. Final pricing may vary based on site conditions and any additional work required.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Main content */}
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        <div className="animate-fade-in">
-          {activeTab === 'estimate' ? renderEstimate() : renderContract()}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap justify-center gap-4 mt-16">
-          <Button
-            onClick={handleDownloadPDF}
-            className="touch-target px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
-          </Button>
-
-          <Button
-            onClick={handleSendEmail}
-            className="touch-target px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            Email to Customer
-          </Button>
-
-          {activeTab === 'estimate' && (
-            <Button
-              onClick={handleGenerateContract}
-              className="touch-target px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Generate Contract
-            </Button>
-          )}
-
-          <Button
-            variant="outline"
-            className="touch-target px-6 py-3 text-slate-600 border-slate-300 hover:bg-slate-50"
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
-          </Button>
-        </div>
+        ) : (
+          <div>
+            {!editingContract ? (
+              <div>
+                <div className="mb-4 flex justify-end">
+                  <Button
+                    onClick={() => setEditingContract(true)}
+                    className="bg-amber-500 hover:bg-amber-600"
+                  >
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Edit Contract Details
+                  </Button>
+                </div>
+                <ContractTemplate
+                  customer={{
+                    name: project.customer.name,
+                    address: project.customer.address,
+                    city: project.customer.city,
+                    state: project.customer.state
+                  }}
+                  introMessage={project.intro_message || 'Thank you for choosing The Best Hardwood Flooring Co. for your flooring and home improvement needs. Below is a breakdown of the work as we discussed. Please review the information and let me know if I missed anything.'}
+                  workDescription={project.work_description || ''}
+                  estimatedCost={project.estimated_cost}
+                  estimatedDays={project.estimated_days}
+                  startDate={project.start_date}
+                  completionDate={project.completion_date}
+                />
+              </div>
+            ) : (
+              <ContractEditor
+                introMessage={editedIntro}
+                workDescription={editedWorkDescription}
+                estimatedDays={editedDays}
+                startDate={editedStartDate}
+                completionDate={editedCompletionDate}
+                onIntroChange={setEditedIntro}
+                onWorkDescriptionChange={setEditedWorkDescription}
+                onEstimatedDaysChange={setEditedDays}
+                onStartDateChange={setEditedStartDate}
+                onCompletionDateChange={setEditedCompletionDate}
+                onSave={handleSaveContractDetails}
+                onCancel={() => {
+                  setEditingContract(false)
+                  setEditedIntro(project.intro_message || 'Thank you for choosing The Best Hardwood Flooring Co. for your flooring and home improvement needs. Below is a breakdown of the work as we discussed. Please review the information and let me know if I missed anything.')
+                  setEditedWorkDescription(project.work_description || '')
+                  setEditedDays(project.estimated_days?.toString() || '')
+                  setEditedStartDate(project.start_date || '')
+                  setEditedCompletionDate(project.completion_date || '')
+                }}
+                saving={saving}
+              />
+            )}
+          </div>
+        )}
       </main>
     </div>
   )

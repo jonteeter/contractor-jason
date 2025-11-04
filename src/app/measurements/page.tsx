@@ -37,6 +37,9 @@ interface MeasurementData {
 
 export default function MeasurementsPage() {
   const [step, setStep] = useState(1)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [projectId, setProjectId] = useState<string | null>(null)
   const [measurements, setMeasurements] = useState<MeasurementData>({
     rooms: [
       { id: 1, name: 'Room 1', length: '', width: '', sqft: 0 }
@@ -48,6 +51,16 @@ export default function MeasurementsPage() {
 
   const totalSteps = 3
   const pricePerSqFt = 12.50 // This would come from floor selection in real app
+
+  // Load project ID from localStorage on mount
+  useEffect(() => {
+    const storedProjectId = localStorage.getItem('currentProjectId')
+    if (storedProjectId) {
+      setProjectId(storedProjectId)
+    } else {
+      setError('No project found. Please start from customer wizard.')
+    }
+  }, [])
 
   // Calculate square footage for a room
   const calculateRoomSqft = (length: string, width: string): number => {
@@ -128,12 +141,62 @@ export default function MeasurementsPage() {
     }))
   }, [measurements.rooms, measurements.stairs])
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < totalSteps) {
       setStep(step + 1)
     } else {
+      // Save measurements to database
+      await saveMeasurements()
+    }
+  }
+
+  const saveMeasurements = async () => {
+    if (!projectId) {
+      setError('No project ID found')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+
+    try {
+      // Prepare room measurements for database
+      const room1 = measurements.rooms[0]
+      const room2 = measurements.rooms[1]
+      const room3 = measurements.rooms[2]
+
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stair_treads: parseInt(measurements.stairs.treads) || 0,
+          stair_risers: parseInt(measurements.stairs.risers) || 0,
+          room_1_length: room1 ? parseFloat(room1.length) || null : null,
+          room_1_width: room1 ? parseFloat(room1.width) || null : null,
+          room_2_length: room2 ? parseFloat(room2.length) || null : null,
+          room_2_width: room2 ? parseFloat(room2.width) || null : null,
+          room_3_length: room3 ? parseFloat(room3.length) || null : null,
+          room_3_width: room3 ? parseFloat(room3.width) || null : null,
+          total_square_feet: measurements.totalSqft,
+          estimated_cost: measurements.estimatedCost,
+          status: 'quoted', // Update status from draft to quoted
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save measurements')
+      }
+
       // Navigate to estimate preview
       window.location.href = '/estimate'
+    } catch (err) {
+      console.error('Save error:', err)
+      setError((err as Error).message)
+      setSaving(false)
     }
   }
 
@@ -503,11 +566,11 @@ export default function MeasurementsPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!canProceed()}
+            disabled={!canProceed() || saving}
             className="touch-target px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {step === totalSteps ? 'Generate Estimate' : 'Next'}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {saving ? 'Saving...' : step === totalSteps ? 'Generate Estimate' : 'Next'}
+            {!saving && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
         </div>
       </main>

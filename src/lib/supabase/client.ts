@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 // Supabase configuration from environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -13,19 +13,33 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
 }
 
-// Create Supabase client for client-side operations
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
+// Create a singleton Supabase client instance
+let supabaseInstance: ReturnType<typeof createSupabaseClient<Database>> | null = null
+
+// Helper function to get or create Supabase client instance
+export const createClient = () => {
+  if (supabaseInstance) {
+    return supabaseInstance
   }
-})
+
+  supabaseInstance = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
+  })
+
+  return supabaseInstance
+}
+
+// Default client instance for backwards compatibility
+export const supabase = createClient()
 
 // Database types will be generated here
 export type Database = {

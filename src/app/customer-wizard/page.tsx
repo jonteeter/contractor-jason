@@ -25,11 +25,16 @@ interface CustomerData {
   email: string
   phone: string
   address: string
+  city: string
+  state: string
+  zipCode: string
   company?: string
 }
 
 export default function CustomerWizardPage() {
   const [step, setStep] = useState(1)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [customerData, setCustomerData] = useState<CustomerData>({
     type: null,
     projectType: null,
@@ -37,17 +42,62 @@ export default function CustomerWizardPage() {
     email: '',
     phone: '',
     address: '',
+    city: '',
+    state: '',
+    zipCode: '',
     company: ''
   })
 
   const totalSteps = 3
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < totalSteps) {
       setStep(step + 1)
     } else {
+      // Save customer and project to database
+      await saveCustomerAndProject()
+    }
+  }
+
+  const saveCustomerAndProject = async () => {
+    setSaving(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: customerData.name,
+          email: customerData.email,
+          phone: customerData.phone,
+          address: customerData.address,
+          city: customerData.city,
+          state: customerData.state,
+          zip_code: customerData.zipCode,
+          customer_type: customerData.type,
+          project_type: customerData.projectType,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save customer')
+      }
+
+      // Store project ID in localStorage for next steps
+      localStorage.setItem('currentProjectId', result.project.id)
+      localStorage.setItem('currentCustomerId', result.customer.id)
+
       // Navigate to floor selection
       window.location.href = '/floor-selection'
+    } catch (err) {
+      console.error('Save error:', err)
+      setError((err as Error).message)
+      setSaving(false)
     }
   }
 
@@ -66,7 +116,7 @@ export default function CustomerWizardPage() {
       case 2:
         return customerData.projectType !== null
       case 3:
-        return customerData.name && customerData.email && customerData.phone && customerData.address
+        return customerData.name && customerData.email && customerData.phone && customerData.address && customerData.city && customerData.state && customerData.zipCode
       default:
         return false
     }
@@ -320,18 +370,61 @@ export default function CustomerWizardPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Project Address *</label>
+                <label className="text-sm font-medium text-slate-700">Street Address *</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                  <textarea
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
                     value={customerData.address}
                     onChange={(e) => setCustomerData({ ...customerData, address: e.target.value })}
-                    rows={3}
-                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base resize-none"
-                    placeholder="123 Main Street, Suite 100&#10;Anytown, ST 12345"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
+                    placeholder="123 Main Street"
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1 space-y-2">
+                  <label className="text-sm font-medium text-slate-700">City *</label>
+                  <input
+                    type="text"
+                    value={customerData.city}
+                    onChange={(e) => setCustomerData({ ...customerData, city: e.target.value })}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
+                    placeholder="Anytown"
+                  />
+                </div>
+
+                <div className="md:col-span-1 space-y-2">
+                  <label className="text-sm font-medium text-slate-700">State *</label>
+                  <input
+                    type="text"
+                    value={customerData.state}
+                    onChange={(e) => setCustomerData({ ...customerData, state: e.target.value })}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
+                    placeholder="CA"
+                    maxLength={2}
+                  />
+                </div>
+
+                <div className="md:col-span-1 space-y-2">
+                  <label className="text-sm font-medium text-slate-700">ZIP Code *</label>
+                  <input
+                    type="text"
+                    value={customerData.zipCode}
+                    onChange={(e) => setCustomerData({ ...customerData, zipCode: e.target.value })}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
+                    placeholder="12345"
+                    maxLength={10}
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
             </div>
           </div>
         )
@@ -395,11 +488,11 @@ export default function CustomerWizardPage() {
 
           <Button
             onClick={handleNext}
-            disabled={!canProceed()}
+            disabled={!canProceed() || saving}
             className="touch-target px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {step === totalSteps ? 'Continue to Floor Selection' : 'Next'}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {saving ? 'Saving...' : step === totalSteps ? 'Continue to Floor Selection' : 'Next'}
+            {!saving && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
         </div>
       </main>

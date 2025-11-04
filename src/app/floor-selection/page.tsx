@@ -35,6 +35,9 @@ interface PricingData {
 
 export default function FloorSelectionPage() {
   const [step, setStep] = useState(1)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [projectId, setProjectId] = useState<string | null>(null)
   const [selection, setSelection] = useState<FloorSelection>({
     type: null,
     size: null,
@@ -50,6 +53,16 @@ export default function FloorSelectionPage() {
   })
 
   const totalSteps = 4
+
+  // Load project ID from localStorage on mount
+  useEffect(() => {
+    const storedProjectId = localStorage.getItem('currentProjectId')
+    if (storedProjectId) {
+      setProjectId(storedProjectId)
+    } else {
+      setError('No project found. Please start from customer wizard.')
+    }
+  }, [])
 
   // Floor type data with realistic pricing
   const floorTypes = {
@@ -115,12 +128,76 @@ export default function FloorSelectionPage() {
     }
   }, [selection])
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < totalSteps) {
       setStep(step + 1)
     } else {
+      // Save floor selection to database
+      await saveFloorSelection()
+    }
+  }
+
+  const saveFloorSelection = async () => {
+    if (!projectId) {
+      setError('No project ID found')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+
+    try {
+      // Map frontend values to database enum values
+      const floorTypeMap: Record<string, string> = {
+        'red-oak': 'red_oak',
+        'white-oak': 'white_oak',
+        'linoleum': 'linoleum'
+      }
+
+      const floorSizeMap: Record<string, string> = {
+        '2inch': '2_inch',
+        '2.5inch': '2_5_inch',
+        '3inch': '3_inch'
+      }
+
+      const finishTypeMap: Record<string, string> = {
+        'stain': 'stain',
+        'gloss': 'gloss',
+        'semi-gloss': 'semi_gloss',
+        'option': 'option'
+      }
+
+      const stainTypeMap: Record<string, string> = {
+        'natural': 'natural',
+        'golden-oak': 'golden_oak',
+        'spice-brown': 'spice_brown'
+      }
+
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          floor_type: floorTypeMap[selection.type || ''],
+          floor_size: floorSizeMap[selection.size || ''],
+          finish_type: finishTypeMap[selection.finish || ''],
+          stain_type: selection.stain ? stainTypeMap[selection.stain] : null,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save floor selection')
+      }
+
       // Navigate to measurements
       window.location.href = '/measurements'
+    } catch (err) {
+      console.error('Save error:', err)
+      setError((err as Error).message)
+      setSaving(false)
     }
   }
 

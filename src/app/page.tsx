@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { 
-  Hammer, 
-  Calculator, 
-  FileText, 
-  Users, 
-  MapPin, 
+import {
+  Hammer,
+  Calculator,
+  FileText,
+  Users,
+  MapPin,
   Clock,
   ArrowRight,
   Star,
@@ -15,16 +16,18 @@ import {
   Shield,
   Smartphone,
   TrendingUp,
-  Award
+  Award,
+  LogIn
 } from 'lucide-react'
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
 
   const handleStartProject = () => {
     setIsLoading(true)
-    // Navigate to customer wizard
-    window.location.href = '/customer-wizard'
+    // Navigate to dashboard if logged in, login if not
+    window.location.href = user ? '/dashboard' : '/login'
   }
 
   const features = [
@@ -122,9 +125,9 @@ export default function HomePage() {
             </div>
 
             {/* Primary CTA */}
-            <div className="mb-16">
-              <Button 
-                size="lg" 
+            <div className="mb-16 flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                size="lg"
                 className="touch-target text-xl px-12 py-8 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-200"
                 onClick={handleStartProject}
                 disabled={isLoading}
@@ -136,13 +139,25 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
-                    Start Your Project
+                    {user ? 'Go to Dashboard' : 'Get Started'}
                     <ArrowRight className="ml-3 w-6 h-6" />
                   </>
                 )}
               </Button>
-              <p className="text-slate-400 mt-4 text-sm">No credit card required • Free demo available</p>
+
+              {!user && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="touch-target text-xl px-12 py-8 bg-white/10 border-2 border-white/20 hover:bg-white/20 text-white font-semibold rounded-2xl backdrop-blur-sm"
+                  onClick={() => window.location.href = '/login'}
+                >
+                  <LogIn className="mr-3 w-6 h-6" />
+                  Sign In
+                </Button>
+              )}
             </div>
+            <p className="text-slate-400 text-sm">Professional contractor management • Start creating estimates today</p>
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
