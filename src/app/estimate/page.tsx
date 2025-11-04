@@ -276,43 +276,43 @@ function EstimatePageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 safe-area-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 w-full">
               <button
                 onClick={() => router.push('/projects')}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className="touch-target p-2 hover:bg-slate-100 active:scale-95 rounded-lg transition-all flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Project Estimate</h1>
-                <p className="text-sm text-slate-600">{project.customer.name}</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">Project Estimate</h1>
+                <p className="text-xs sm:text-sm text-slate-600 truncate">{project.customer.name}</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
               <Button
                 onClick={() => setActiveTab('estimate')}
                 variant={activeTab === 'estimate' ? 'default' : 'outline'}
-                className={activeTab === 'estimate' ? 'bg-amber-500 hover:bg-amber-600' : ''}
+                className={`touch-target text-xs sm:text-sm px-3 sm:px-4 py-2 flex-shrink-0 active:scale-95 transition-transform ${activeTab === 'estimate' ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
               >
                 Estimate
               </Button>
               <Button
                 onClick={() => setActiveTab('contract')}
                 variant={activeTab === 'contract' ? 'default' : 'outline'}
-                className={activeTab === 'contract' ? 'bg-amber-500 hover:bg-amber-600' : ''}
+                className={`touch-target text-xs sm:text-sm px-3 sm:px-4 py-2 flex-shrink-0 active:scale-95 transition-transform ${activeTab === 'contract' ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
               >
                 Contract
               </Button>
               <Button
                 variant="outline"
-                className="text-amber-600 border-amber-600 hover:bg-amber-50"
+                className="touch-target text-xs sm:text-sm px-3 sm:px-4 py-2 text-amber-600 border-amber-600 hover:bg-amber-50 active:scale-95 transition-transform flex-shrink-0"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
+                <Download className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Download PDF</span>
               </Button>
             </div>
           </div>
@@ -320,7 +320,7 @@ function EstimatePageContent() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 safe-area-bottom">
         {activeTab === 'estimate' ? (
           <div className="bg-white rounded-xl shadow-lg">
             {/* Estimate Header */}
@@ -345,7 +345,7 @@ function EstimatePageContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900 mb-2 flex items-center">
                     <User className="w-4 h-4 mr-2 text-amber-500" />
@@ -373,7 +373,7 @@ function EstimatePageContent() {
             {/* Project Details */}
             <div className="border-b border-slate-200 p-8">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Project Specifications</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div className="bg-slate-50 rounded-lg p-4">
                   <div className="flex items-center mb-2">
                     <Palette className="w-4 h-4 text-amber-500 mr-2" />

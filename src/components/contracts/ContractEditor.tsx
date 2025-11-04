@@ -35,30 +35,33 @@ export default function ContractEditor({
   saving
 }: ContractEditorProps) {
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8 space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-bold text-slate-900">Edit Contract Details</h2>
-        <div className="flex items-center space-x-2">
+    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4 gap-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Edit Contract Details</h2>
+        <div className="flex items-center gap-2 sm:gap-2">
           <Button
             onClick={onSave}
             disabled={saving}
-            className="bg-green-500 hover:bg-green-600 text-white"
+            className="touch-target flex-1 sm:flex-none bg-green-500 hover:bg-green-600 active:scale-95 text-white text-sm sm:text-base px-4 py-2 sm:px-4 sm:py-2 transition-transform"
           >
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Saving...' : 'Save Changes'}
+            <Save className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">{saving ? 'Saving...' : 'Save Changes'}</span>
+            <span className="sm:hidden">Save</span>
           </Button>
           <Button
             onClick={onCancel}
             variant="outline"
             disabled={saving}
+            className="touch-target flex-1 sm:flex-none active:scale-95 text-sm sm:text-base px-4 py-2 sm:px-4 sm:py-2 transition-transform"
           >
-            <X className="w-4 h-4 mr-2" />
-            Cancel
+            <X className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Cancel</span>
+            <span className="sm:hidden">Cancel</span>
           </Button>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Intro Message */}
         <div>
           <label className="block text-sm font-semibold text-slate-900 mb-2">
@@ -71,7 +74,7 @@ export default function ContractEditor({
             value={introMessage}
             onChange={(e) => onIntroChange(e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm sm:text-base touch-target"
             placeholder="Thank you for choosing..."
           />
         </div>
@@ -88,7 +91,7 @@ export default function ContractEditor({
             value={workDescription}
             onChange={(e) => onWorkDescriptionChange(e.target.value)}
             rows={12}
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm font-mono"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm sm:text-base font-mono touch-target mobile-scroll"
             placeholder="Install 5&quot; hickory floor provided by client using glue down application with staple assist. Client to provide glue and hickory floor including flush mount vents.&#10;Install Hickory stair treads and risers. Client to provide all materials.&#10;Sand, stain, and finish all installed 5&quot; hickory floors and stairs throughout home where they exist using 6 step sanding method, and:&#10;Apply 3 coats of commercial water based finish Berger-Seidle green star and sheen of customers choice.&#10;All finish, staples, nails, sandpaper, and labor will be provided by the contractor.&#10;Contractor to remove all flooring project debris and dispose of off site."
           />
           <p className="text-xs text-slate-500 mt-2">
@@ -97,7 +100,7 @@ export default function ContractEditor({
         </div>
 
         {/* Timeline Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-semibold text-slate-900 mb-2">
               Estimated Completion (Business Days)
@@ -106,7 +109,7 @@ export default function ContractEditor({
               type="number"
               value={estimatedDays}
               onChange={(e) => onEstimatedDaysChange(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base touch-target"
               placeholder="7"
               min="1"
             />
@@ -120,7 +123,7 @@ export default function ContractEditor({
               type="date"
               value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base touch-target"
             />
           </div>
 
@@ -132,13 +135,13 @@ export default function ContractEditor({
               type="date"
               value={completionDate}
               onChange={(e) => onCompletionDateChange(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base touch-target"
             />
           </div>
         </div>
 
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-sm text-amber-800">
+        <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-xs sm:text-sm text-amber-800">
             <strong>Tip:</strong> Fill out all fields to avoid blank spaces in the final contract.
             The work description should be detailed enough that both you and the customer are clear on what's included.
           </p>

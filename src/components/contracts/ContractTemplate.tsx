@@ -48,8 +48,8 @@ export default function ContractTemplate({
   const finalPayment = estimatedCost * 0.1
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8">
-      <div className="prose max-w-none">
+    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
+      <div className="prose prose-sm sm:prose max-w-none">
         {/* Header with phone */}
         <div className="text-right mb-4">
           <p className="font-semibold">708-762-1003</p>

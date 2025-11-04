@@ -228,25 +228,25 @@ export default function FloorSelectionPage() {
     switch (step) {
       case 1:
         return (
-          <div className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">
                 Choose Your Flooring Type
               </h2>
-              <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto">
                 Select the perfect flooring material for your project
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
               {Object.entries(floorTypes).map(([key, floor]) => (
                 <button
                   key={key}
                   onClick={() => setSelection({ ...selection, type: key as FloorType })}
-                  className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left ${
+                  className={`group relative p-5 sm:p-6 rounded-2xl sm:rounded-3xl border-2 transition-all duration-300 text-left touch-target active:scale-[0.98] ${
                     selection.type === key
-                      ? 'border-amber-500 bg-amber-50 shadow-lg scale-105'
-                      : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-md hover:scale-102'
+                      ? 'border-amber-500 bg-amber-50 shadow-lg'
+                      : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-md'
                   }`}
                 >
                   <div className="text-center mb-6">
@@ -436,27 +436,27 @@ export default function FloorSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 safe-area-top flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
               <button
                 onClick={handleBack}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className="touch-target p-2 hover:bg-slate-100 active:scale-95 rounded-lg transition-all flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
-              <h1 className="text-xl font-bold text-slate-900">Floor Selection</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">Floor Selection</h1>
             </div>
-            
+
             {/* Progress indicator */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               {Array.from({ length: totalSteps }, (_, i) => (
                 <div
                   key={i}
-                  className={`w-3 h-3 rounded-full transition-colors ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${
                     i + 1 <= step ? 'bg-amber-500' : 'bg-slate-200'
                   }`}
                 />
@@ -468,24 +468,24 @@ export default function FloorSelectionPage() {
 
       {/* Pricing Summary - Fixed at top when selections are made */}
       {selection.type && (
-        <div className="bg-amber-50 border-b border-amber-200 sticky top-16 z-40">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span className="font-medium text-slate-700">
+        <div className="bg-amber-50 border-b border-amber-200 sticky top-[57px] sm:top-[65px] z-40 flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 flex-shrink-0" />
+                  <span className="font-medium text-slate-700 truncate">
                     {selection.type && floorTypes[selection.type].name}
-                    {selection.size && ` • ${floorSizes[selection.size].name}`}
-                    {selection.finish && ` • ${finishTypes[selection.finish].name}`}
-                    {selection.stain && ` • ${stainTypes[selection.stain].name}`}
+                    {selection.size && <span className="hidden sm:inline"> • {floorSizes[selection.size].name}</span>}
+                    {selection.finish && <span className="hidden md:inline"> • {finishTypes[selection.finish].name}</span>}
+                    {selection.stain && <span className="hidden lg:inline"> • {stainTypes[selection.stain].name}</span>}
                   </span>
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <DollarSign className="w-4 h-4 text-amber-600" />
-                <span className="text-lg font-bold text-amber-700">
+
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
+                <span className="text-sm sm:text-lg font-bold text-amber-700 whitespace-nowrap">
                   ${pricing.totalPerSqFt.toFixed(2)}/sq ft
                 </span>
               </div>
@@ -495,33 +495,34 @@ export default function FloorSelectionPage() {
       )}
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-12 safe-area-bottom">
         <div className="animate-fade-in">
           {renderStep()}
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-16 max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mt-8 sm:mt-16 max-w-4xl mx-auto gap-3 sm:gap-4">
           <Button
             variant="outline"
             onClick={handleBack}
-            className="touch-target px-6 py-3 text-slate-600 border-slate-300 hover:bg-slate-50"
+            className="touch-target px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base text-slate-600 border-slate-300 hover:bg-slate-50 active:scale-95 transition-transform"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            <ArrowLeft className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Back</span>
           </Button>
 
-          <div className="text-sm text-slate-500">
+          <div className="text-xs sm:text-sm text-slate-500 whitespace-nowrap">
             Step {step} of {totalSteps}
           </div>
 
           <Button
             onClick={handleNext}
             disabled={!canProceed()}
-            className="touch-target px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="touch-target px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform"
           >
-            {step === totalSteps ? 'Continue to Measurements' : 'Next'}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <span className="hidden sm:inline">{step === totalSteps ? 'Continue to Measurements' : 'Next'}</span>
+            <span className="sm:hidden">Next</span>
+            <ArrowRight className="w-4 h-4 sm:ml-2" />
           </Button>
         </div>
       </main>
