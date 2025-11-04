@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { supabase } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -16,39 +17,36 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    console.log('Login attempt with:', email)
+    console.log('🔑 Login attempt with:', email)
 
     try {
-      console.log('Calling login API...')
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      // Use client-side Supabase to login
+      console.log('🔑 Signing in with Supabase client...')
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       })
 
-      const result = await response.json()
-      console.log('Login API response:', result)
-
-      if (!response.ok) {
-        console.error('Login error:', result.error)
-        setError(result.error || 'Login failed')
+      if (signInError) {
+        console.error('🔑 Login error:', signInError)
+        setError(signInError.message)
         setLoading(false)
         return
       }
 
-      if (result.success && result.redirectTo) {
-        console.log('Login successful! Redirecting to:', result.redirectTo)
-        // Use router.push for client-side navigation
-        router.push(result.redirectTo)
+      if (data?.session) {
+        console.log('🔑 Login successful! Session created for:', data.user?.email)
+        console.log('🔑 Redirecting to dashboard...')
+        // Use window.location for full page reload to ensure middleware picks up session
+        window.location.href = '/dashboard'
+        return
       } else {
-        console.error('No redirect URL returned')
-        setError('Login failed - no redirect')
+        console.error('🔑 No session returned')
+        setError('Login failed - no session created')
         setLoading(false)
       }
     } catch (err) {
-      console.error('Login exception:', err)
+      console.error('🔑 Login exception:', err)
       setError('An unexpected error occurred: ' + (err as Error).message)
       setLoading(false)
     }

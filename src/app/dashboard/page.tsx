@@ -61,19 +61,45 @@ export default function DashboardPage() {
     }
   }
 
+  console.log('📊 Dashboard render - loading:', loading, 'user:', user?.email, 'contractor:', contractor?.company_name)
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading...</p>
+          <p className="mt-4 text-slate-600">Loading dashboard...</p>
         </div>
       </div>
     )
   }
 
   if (!user || !contractor) {
-    return null
+    console.error('❌ Dashboard: Missing user or contractor!', { user: !!user, contractor: !!contractor })
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center max-w-md mx-auto">
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold text-slate-900 mb-4">Unable to Load Dashboard</h2>
+            <p className="text-slate-600 mb-6">
+              {!user ? 'You are not logged in.' : 'Could not load your contractor profile.'}
+            </p>
+            <Button
+              onClick={async () => {
+                await signOut()
+                window.location.href = '/login'
+              }}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              Return to Login
+            </Button>
+            <p className="text-xs text-slate-500 mt-4">
+              Check the browser console for more details.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const handleSignOut = async () => {

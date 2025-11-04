@@ -34,9 +34,12 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  console.log('🛡️ Middleware:', request.nextUrl.pathname, 'User:', user?.email || 'None')
+
   // Protect dashboard routes
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     if (!user) {
+      console.log('🛡️ Redirecting to login - no user')
       const loginUrl = new URL('/login', request.url)
       return NextResponse.redirect(loginUrl)
     }
@@ -46,6 +49,7 @@ export async function middleware(request: NextRequest) {
   const protectedWizardRoutes = ['/customer-wizard', '/floor-selection', '/measurements', '/estimate']
   if (protectedWizardRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
     if (!user) {
+      console.log('🛡️ Redirecting to login - protected route, no user')
       const loginUrl = new URL('/login', request.url)
       return NextResponse.redirect(loginUrl)
     }
@@ -53,6 +57,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to dashboard if logged in and trying to access login
   if (request.nextUrl.pathname === '/login' && user) {
+    console.log('🛡️ Redirecting to dashboard - user logged in')
     const dashboardUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(dashboardUrl)
   }

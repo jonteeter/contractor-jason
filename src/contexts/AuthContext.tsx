@@ -32,8 +32,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (initialized.current) return
     initialized.current = true
 
+    console.log('🔐 AuthContext: Initializing...')
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 AuthContext: Session loaded:', session?.user?.email || 'No user')
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchContractor(session.user.id)
@@ -46,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('🔐 AuthContext: Auth state changed:', _event, session?.user?.email || 'No user')
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchContractor(session.user.id)
@@ -62,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const fetchContractor = async (userId: string) => {
+    console.log('🔐 AuthContext: Fetching contractor for user:', userId)
     try {
       const { data, error } = await supabase
         .from('contractors')
@@ -69,13 +74,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single()
 
-      if (!error && data) {
+      if (error) {
+        console.error('🔐 AuthContext: Error fetching contractor:', error)
+        console.error('🔐 Error details:', JSON.stringify(error, null, 2))
+      } else if (data) {
+        console.log('🔐 AuthContext: Contractor loaded:', data.company_name)
         setContractor(data)
       } else {
-        console.error('Error fetching contractor:', error)
+        console.error('🔐 AuthContext: No contractor data returned')
       }
     } catch (err) {
-      console.error('Exception fetching contractor:', err)
+      console.error('🔐 AuthContext: Exception fetching contractor:', err)
     } finally {
       setLoading(false)
     }
