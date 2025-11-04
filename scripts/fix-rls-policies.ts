@@ -29,7 +29,13 @@ async function fixRLSPolicies() {
     DROP POLICY IF EXISTS "Contractors can delete own projects" ON projects;
   `
 
-  const { error: dropError } = await supabase.rpc('exec_sql', { sql: dropPolicies }).catch(() => ({error: null}))
+  let dropError = null
+  try {
+    const result = await supabase.rpc('exec_sql', { sql: dropPolicies })
+    dropError = result.error
+  } catch (e) {
+    // Ignore errors if exec_sql doesn't exist
+  }
 
   // Create new fixed policies
   console.log('2️⃣  Creating new policies...')

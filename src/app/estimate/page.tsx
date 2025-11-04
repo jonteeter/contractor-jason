@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import ContractEditor from '@/components/contracts/ContractEditor'
@@ -59,7 +59,7 @@ interface Project {
   customer: Customer
 }
 
-export default function EstimatePage() {
+function EstimatePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [projectId, setProjectId] = useState<string | null | undefined>(undefined)
@@ -566,5 +566,20 @@ export default function EstimatePage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function EstimatePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading estimate...</p>
+        </div>
+      </div>
+    }>
+      <EstimatePageContent />
+    </Suspense>
   )
 }
