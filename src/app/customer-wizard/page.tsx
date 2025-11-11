@@ -105,7 +105,7 @@ export default function CustomerWizardPage() {
     if (step > 1) {
       setStep(step - 1)
     } else {
-      window.location.href = '/'
+      window.location.href = '/dashboard'
     }
   }
 

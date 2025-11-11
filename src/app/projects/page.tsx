@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import AppHeader from '@/components/navigation/AppHeader'
 import {
   Plus,
   Search,
@@ -135,27 +136,20 @@ export default function ProjectsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 safe-area-top">
-        <div className="max-w-7xl mx-auto mobile-container py-4 sm:py-6">
-          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 truncate">Projects</h1>
-              <p className="text-sm sm:text-base text-slate-600 mt-1">Manage your flooring estimates and contracts</p>
-            </div>
-            <Button
-              onClick={() => router.push('/customer-wizard')}
-              className="touch-target bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2.5 flex-shrink-0 transition-transform"
-            >
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">New Project</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AppHeader title="Projects" showBack={true} backHref="/dashboard" />
 
       {/* Filters */}
       <div className="max-w-7xl mx-auto mobile-container py-4 sm:py-6">
         <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <Button
+              onClick={() => router.push('/customer-wizard')}
+              className="touch-target w-full sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Project
+            </Button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 pointer-events-none" />
