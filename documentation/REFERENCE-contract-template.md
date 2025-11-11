@@ -1,3 +1,17 @@
+# Contract Template Reference
+
+**Source**: Jason Dixon (The Best Hardwood Flooring Co.)
+**Purpose**: Reference template used in [ContractTemplate.tsx](../src/components/contracts/ContractTemplate.tsx)
+**Last Updated**: November 10, 2025
+
+This is the actual contract template provided by Jason Dixon. The application uses this verbiage to generate customer contracts.
+
+**DO NOT EDIT** - This is a reference document only.
+
+---
+
+## Original Template
+
 708-762-1003
 
 Brad Suter

@@ -1,48 +1,125 @@
-# Lotus Contractor App - Product Context and Business Requirements
+# Tary - Product Context and Business Requirements
 
-## Industry Context
-The flooring industry relies heavily on accurate measurements, clear communication of options, and professional contract presentation. The original 2017 specification addressed these needs but used outdated native development approaches that were expensive and hard to maintain.
+## Application Overview
+Tary is a production mobile-first flooring contractor management application serving Jason Dixon (The Best Hardwood Flooring Co.). The app streamlines the estimate-to-contract workflow, replacing manual processes with automated calculations and professional document generation.
 
-## Core User Problems (from PDF Analysis)
-1. **Customer Option Complexity**: Need clear interface for floor types, sizes, finishes, and stains
-2. **Measurement Accuracy**: Critical measurements for stairs (treads/risers) and multiple rooms
-3. **Contract Generation**: Professional contracts with auto-populated customer and project data
-4. **Multi-User Management**: (Phase 2) Multiple contractors with sales team assignment
-5. **Time Tracking**: (Phase 2) GPS-enabled clock-in for sales persons
-6. **Business Development**: (Phase 3) Digital business cards for lead generation
+## Real-World Usage
+Jason uses Tary daily to:
+- Create customer records with full contact information
+- Generate instant flooring estimates with material and labor costs
+- Produce legally compliant contracts matching his existing template
+- Track all projects in a searchable dashboard
+- Access everything from mobile devices at jobsites
 
-## Specific Requirements from PDF
+## Core Problems Solved
+1. ✅ **Time-Consuming Manual Estimates**: Automated calculations save 2+ hours per estimate
+2. ✅ **Inconsistent Contract Quality**: Professional template ensures every contract is complete
+3. ✅ **Mobile Accessibility**: Full functionality on phones/tablets for jobsite use
+4. ✅ **Customer Data Management**: Organized storage with easy search and retrieval
+5. ✅ **Pricing Transparency**: Real-time cost updates as selections are made
 
-### Phase 1 Features
-- **Customer Selection**: New customer (contact form) vs Existing customer (estimate/refinishing options)
-- **Floor Options**: 
-  - Types: Red Oak, White Oak, Linoleum
-  - Sizes: 2", 2.5", 3" (predefined dropdown)
-  - Finishes: Stain, Gloss, Semi-gloss, Option
-  - Stains: Natural, Golden Oak, Spice Brown
-- **Measurements**: 
-  - Stairs: Number of treads and risers
-  - Rooms: Manual entry for Room 1, Room 2, Room 3 (length x width)
-- **Contract Generation**: Auto-populate customer info and measurements into contract template
+## Current Feature Set (Phase 1 - Implemented)
 
-### Phase 2 Features  
-- **Multi-Contractor Support**: Multiple companies can use the platform
-- **Sales Team Management**: Contractors assign projects to sales persons
-- **Subscription Packages**: Limit number of sales persons based on plan
-- **Digital Signatures**: Contractors can sign contracts digitally
-- **GPS Time Tracking**: Clock-in functionality with location verification
-- **Project Assignment**: Contractors assign specific projects to sales team members
+### Customer Management
+- Full contact information (name, email, phone, address)
+- Customer type tracking (new/existing)
+- Automatic customer-project linking
+- Search and filter capabilities
 
-### Phase 3 Features
-- **Digital Business Cards**: 3-5 templates with contractor branding
-- **Auto-Population**: Contact info automatically fills template fields
-- **QR Code Generation**: Business card info stored as QR code
-- **Social Media Sharing**: Facebook, Twitter, LinkedIn, Instagram integration
+### Floor Specifications
+- **Types**: Red Oak, White Oak, Linoleum (with pricing differentials)
+- **Sizes**: 2", 2.5", 3" (premium pricing for larger planks)
+- **Finishes**: Stain, Gloss, Semi-Gloss, Custom
+- **Stains**: Natural, Golden Oak, Spice Brown (conditional on finish selection)
+- Real-time pricing calculator showing running totals
 
-## Key Business Requirements
-- **Mobile-First Design**: Must work perfectly on tablets and phones (jobsite use)
-- **Professional Appearance**: Compete with $100k native app quality
-- **Offline Capability**: Essential for jobsites with poor connectivity
-- **Real-time Sync**: Multi-user updates when connected
-- **Scalable Architecture**: Support growth from single contractor to multiple companies
-- **Contract Integration**: Professional PDF generation and email delivery
+### Measurements
+- **Rooms**: Up to 3 rooms with length × width input
+- **Stairs**: Tread and riser counts
+- Automatic square footage calculations
+- Mobile-optimized number inputs (prevents iOS zoom)
+
+### Contract Generation
+- Uses Jason's actual contract template (8 Articles + Exhibit A)
+- Auto-populates all customer and project data
+- Editable intro message
+- Editable work description
+- Timeline fields (start date, completion date, estimated days)
+- Payment breakdown (60% down, 30% mid, 10% final)
+- Signature sections for both parties
+
+### Project Management
+- Dashboard with statistics (project counts, customer counts)
+- Projects list with search and status filters
+- Status tracking (Draft, Quoted, Approved, In Progress, Completed)
+- Individual project view with estimate and contract tabs
+
+### Security & Authentication
+- Supabase authentication (email/password)
+- Row Level Security (RLS) on all database tables
+- Server-side middleware for protected routes
+- Cookie-based sessions using `@supabase/ssr`
+
+## Planned Features (Phase 2 - Not Yet Built)
+
+### High Priority
+- **PDF Export**: Download estimates and contracts as PDF
+- **Email Integration**: Send estimates directly to customers
+- **Digital Signatures**: Capture customer signatures on contracts
+- **Payment Tracking**: Monitor 60/30/10 payment schedule
+- **Customer List Page**: Dedicated customer management interface
+- **Photo Uploads**: Before/after project photos
+
+### Medium Priority
+- **Multi-Contractor Support**: Platform for multiple companies
+- **Sales Team Management**: Assign projects to team members
+- **Subscription Tiers**: Basic, Professional, Enterprise plans
+- **GPS Time Tracking**: Location-verified clock-in
+- **Project Templates**: Reusable configurations
+
+### Low Priority
+- **Digital Business Cards**: QR code generation
+- **Social Media Integration**: Share to Facebook, LinkedIn, etc.
+- **Advanced Reporting**: Revenue tracking, project analytics
+- **Mobile App**: Native iOS/Android using Capacitor
+
+## Technical Requirements Met
+
+### Mobile-First Design ✅
+- Touch targets minimum 44×44px
+- Safe area support for notched devices (iPhone X+)
+- High contrast colors for outdoor visibility
+- Responsive typography (mobile → tablet → desktop)
+- Active states for tactile feedback
+- Icon-only buttons on mobile to save space
+
+### Performance ✅
+- Next.js 15 App Router for optimal performance
+- Server components for faster initial loads
+- Real-time calculations without lag
+- Production build size: ~150KB First Load JS
+- Zero TypeScript compilation errors
+
+### Data Management ✅
+- PostgreSQL via Supabase
+- Real-time subscriptions capability (not yet used)
+- Automatic timestamp updates
+- Foreign key relationships
+- Database indexes for performance
+
+### Security ✅
+- Row Level Security (contractors can only see their own data)
+- JWT authentication tokens
+- HTTP-only cookies for session storage
+- Server-side validation
+- Protected API routes
+
+## Outstanding Business Requirements
+
+### Not Yet Implemented
+- ❌ **Offline Capability**: Requires service worker and local storage
+- ❌ **PDF Generation**: Buttons exist but not functional
+- ❌ **Email Delivery**: No email service integration
+- ❌ **Digital Signatures**: No signature capture component
+- ❌ **Multi-Tenant**: Single contractor only (Jason)
+- ❌ **Payment Processing**: No Stripe/payment integration

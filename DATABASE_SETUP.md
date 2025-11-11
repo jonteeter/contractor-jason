@@ -1,11 +1,16 @@
-# 🚀 Database Setup - Quick Start Guide
+# 🗄️ Database Setup Guide
 
-This guide will walk you through setting up the Supabase database for the Lotus app.
+**Project**: Tary (formerly Lotus)
+**Database**: Supabase PostgreSQL
+**Last Updated**: November 10, 2025
+
+This guide walks you through setting up the database for the Tary contractor app.
 
 ## Prerequisites
 
-- Supabase project created (lotus - eonnbueqowenorscxugz)
+- Supabase project: **lotus** (ID: eonnbueqowenorscxugz)
 - Environment variables configured in `.env.local`
+- Node.js 20+ installed
 
 ## Step 1: Install Dependencies
 
@@ -87,9 +92,9 @@ You should see:
 ==================================================
 ```
 
-## Step 5: Create Jason's Account
+## Step 5: Create Contractor Account
 
-This is a two-part process:
+This is a two-part process for each contractor (currently only Jason).
 
 ### Part A: Create Auth User
 
@@ -98,11 +103,11 @@ This is a two-part process:
 3. Fill in:
    ```
    Email: jason@thebesthardwoodfloor.com
-   Password: [create a strong password - Jason will need this]
+   Password: [create a strong password - contractor will need this]
    Auto Confirm User: ✅ YES (check this!)
    ```
 4. Click **Create User**
-5. **IMPORTANT:** Copy the User ID (it looks like: `a1b2c3d4-e5f6-7890-abcd-ef1234567890`)
+5. **IMPORTANT:** Copy the User ID UUID (looks like: `a1b2c3d4-e5f6-7890-abcd-ef1234567890`)
 
 ### Part B: Create Contractor Record
 
@@ -141,7 +146,7 @@ INSERT INTO public.contractors (
 4. Click **Run**
 5. You should see: "Success. 1 rows affected"
 
-## Step 6: Verify Jason's Account
+## Step 6: Verify Contractor Account
 
 Run the test script again:
 
@@ -156,34 +161,55 @@ You should now see:
       - The Best Hardwood Flooring Co. (Jason Dixon)
 ```
 
-## ✅ Done! What We Created
+## ✅ Setup Complete!
 
-### Tables:
-- **contractors** - Jason's company info
-- **customers** - Will store customer records
-- **projects** - Will store estimates/projects
+### What Was Created
 
-### Security:
-- ✅ Row Level Security (RLS) enabled
-- ✅ Jason can only see his own data
-- ✅ Other contractors can't access Jason's data
+**Database Tables**:
+- **contractors** - Contractor companies (Jason's company)
+- **customers** - Customer records linked to contractors
+- **projects** - Estimates/contracts with full specifications
 
-### Features:
-- ✅ Automatic timestamp updates
-- ✅ Foreign key relationships
-- ✅ Indexed for fast queries
-- ✅ Data validation
+**Security**:
+- ✅ Row Level Security (RLS) enabled on all tables
+- ✅ Contractors can only see their own data
+- ✅ Data isolation between contractors
+
+**Features**:
+- ✅ Automatic timestamp updates (created_at, updated_at)
+- ✅ Foreign key relationships with CASCADE delete
+- ✅ Database indexes for performance
+- ✅ Enum validation for status fields
+- ✅ CHECK constraints for data integrity
+
+### Database Schema Reference
+
+**contractors** table:
+- Stores contractor company information
+- Links to auth.users for authentication
+- Contains subscription plan and status
+
+**customers** table:
+- Stores customer contact information
+- Belongs to a specific contractor
+- Contains full address fields
+
+**projects** table:
+- Stores estimates and contracts
+- Belongs to a contractor and customer
+- Contains floor specs, measurements, costs
+- Status: draft → quoted → approved → in_progress → completed
 
 ## What's Next?
 
-Now that the database is set up:
+The database is ready! Application features:
 1. ✅ Database schema created
-2. ✅ Jason's account created
-3. 🚧 Build login page (next step)
-4. 🚧 Connect customer wizard to database
-5. 🚧 Build dashboard
-6. 🚧 Add PDF generation
-7. 🚧 Add email sending
+2. ✅ Contractor account created
+3. ✅ Login page functional
+4. ✅ Customer wizard connected
+5. ✅ Dashboard operational
+6. 🚧 PDF generation (planned)
+7. 🚧 Email sending (planned)
 
 ---
 

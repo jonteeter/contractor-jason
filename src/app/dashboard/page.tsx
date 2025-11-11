@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import AppHeader from '@/components/navigation/AppHeader'
 
 interface Stats {
   totalProjects: number
@@ -13,7 +13,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const { user, contractor, loading, signOut } = useAuth()
+  const { user, contractor, loading } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<Stats>({
     totalProjects: 0,
@@ -75,60 +75,13 @@ export default function DashboardPage() {
   }
 
   if (!user || !contractor) {
-    console.error('❌ Dashboard: Missing user or contractor!', { user: !!user, contractor: !!contractor })
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center max-w-md mx-auto">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Unable to Load Dashboard</h2>
-            <p className="text-slate-600 mb-6">
-              {!user ? 'You are not logged in.' : 'Could not load your contractor profile.'}
-            </p>
-            <Button
-              onClick={async () => {
-                await signOut()
-                window.location.href = '/login'
-              }}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white"
-            >
-              Return to Login
-            </Button>
-            <p className="text-xs text-slate-500 mt-4">
-              Check the browser console for more details.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/login')
+    return null
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50 safe-area-top">
-        <div className="max-w-7xl mx-auto mobile-container py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 truncate">
-                {contractor.company_name}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-600 truncate">{contractor.contact_name}</p>
-            </div>
-            <Button
-              onClick={handleSignOut}
-              variant="outline"
-              className="touch-target text-xs sm:text-sm text-slate-600 hover:text-slate-900 px-3 sm:px-4 py-2 flex-shrink-0 active:scale-95 transition-transform"
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AppHeader title={contractor.company_name} showBack={false} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto mobile-container py-4 sm:py-6 lg:py-8 safe-area-bottom">
@@ -180,7 +133,8 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          <div className="bg-white rounded-xl shadow p-5 sm:p-6 opacity-50 cursor-not-allowed">
+          <Link href="/customers">
+            <div className="bg-white rounded-xl shadow p-5 sm:p-6 hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer border-2 border-transparent hover:border-amber-500 touch-target">
             <div className="flex items-center mb-3 sm:mb-4">
               <div className="bg-green-100 rounded-lg p-2.5 sm:p-3 flex-shrink-0">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,9 +146,10 @@ export default function DashboardPage() {
               </h3>
             </div>
             <p className="text-sm sm:text-base text-slate-600">
-              View and manage customer information (Coming soon)
+              View and manage customer information
             </p>
           </div>
+        </Link>
         </div>
 
         {/* Stats Overview */}

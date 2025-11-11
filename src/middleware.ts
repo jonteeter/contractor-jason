@@ -45,9 +45,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect wizard routes
-  const protectedWizardRoutes = ['/customer-wizard', '/floor-selection', '/measurements', '/estimate']
-  if (protectedWizardRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
+  // Protect wizard routes and other authenticated pages
+  const protectedRoutes = ['/customer-wizard', '/floor-selection', '/measurements', '/estimate', '/profile', '/settings', '/customers', '/projects']
+  if (protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
     if (!user) {
       console.log('🛡️ Redirecting to login - protected route, no user')
       const loginUrl = new URL('/login', request.url)
@@ -72,6 +72,10 @@ export const config = {
     '/floor-selection/:path*',
     '/measurements/:path*',
     '/estimate/:path*',
+    '/profile/:path*',
+    '/settings/:path*',
+    '/customers/:path*',
+    '/projects/:path*',
     '/login',
   ],
 }

@@ -12,6 +12,7 @@ interface AuthContextType {
   contractor: Contractor | null
   loading: boolean
   signOut: () => Promise<void>
+  refreshContractor: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   contractor: null,
   loading: true,
   signOut: async () => {},
+  refreshContractor: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -96,8 +98,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setContractor(null)
   }
 
+  const refreshContractor = async () => {
+    if (user) {
+      await fetchContractor(user.id)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, contractor, loading, signOut }}>
+    <AuthContext.Provider value={{ user, contractor, loading, signOut, refreshContractor }}>
       {children}
     </AuthContext.Provider>
   )
