@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import ContractEditor from '@/components/contracts/ContractEditor'
 import ContractTemplate from '@/components/contracts/ContractTemplate'
+import SignatureModal from '@/components/signatures/SignatureModal'
+import { downloadEstimatePDF } from '@/lib/pdf/generateEstimatePDF'
+import { downloadContractPDF } from '@/lib/pdf/generateContractPDF'
 import {
   ArrowLeft,
   Download,
@@ -57,6 +60,10 @@ interface Project {
   estimated_days: number | null
   start_date: string | null
   completion_date: string | null
+  customer_signature: string | null
+  customer_signature_date: string | null
+  contractor_signature: string | null
+  contractor_signature_date: string | null
   customer: Customer
 }
 
@@ -80,6 +87,9 @@ function EstimatePageContent() {
   const [saving, setSaving] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState(false)
+  const [showCustomerSignature, setShowCustomerSignature] = useState(false)
+  const [showContractorSignature, setShowContractorSignature] = useState(false)
+  const [savingSignature, setSavingSignature] = useState(false)
 
   // Get project ID from URL or localStorage (client-side only)
   useEffect(() => {
@@ -209,6 +219,129 @@ function EstimatePageContent() {
       alert(`Failed to send email: ${(err as Error).message}`)
     } finally {
       setSendingEmail(false)
+    }
+  }
+
+  const handleSaveSignature = async (signatureData: string, signatureType: 'customer' | 'contractor') => {
+    if (!project) return
+
+    setSavingSignature(true)
+    try {
+      const response = await fetch(`/api/projects/${project.id}/signatures`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signatureType,
+          signatureData,
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save signature')
+      }
+
+      const result = await response.json()
+      setProject(result.project)
+
+      // Close the modal
+      if (signatureType === 'customer') {
+        setShowCustomerSignature(false)
+      } else {
+        setShowContractorSignature(false)
+      }
+    } catch (err) {
+      console.error('Save signature error:', err)
+      alert('Failed to save signature')
+    } finally {
+      setSavingSignature(false)
+    }
+  }
+
+  const handleDownloadPDF = () => {
+    if (!project) return
+
+    const rooms = [
+      project.room_1_length && project.room_1_width ? {
+        name: 'Room 1',
+        length: project.room_1_length,
+        width: project.room_1_width,
+        sqft: project.room_1_length * project.room_1_width
+      } : null,
+      project.room_2_length && project.room_2_width ? {
+        name: 'Room 2',
+        length: project.room_2_length,
+        width: project.room_2_width,
+        sqft: project.room_2_length * project.room_2_width
+      } : null,
+      project.room_3_length && project.room_3_width ? {
+        name: 'Room 3',
+        length: project.room_3_length,
+        width: project.room_3_width,
+        sqft: project.room_3_length * project.room_3_width
+      } : null,
+    ].filter((room): room is NonNullable<typeof room> => room !== null)
+
+    if (activeTab === 'estimate') {
+      // Download Estimate PDF
+      downloadEstimatePDF({
+        contractorName: 'Jason W. Dixon',
+        contractorCompany: 'The Best Hardwood Flooring Co.',
+        contractorPhone: '708-762-1003',
+        contractorEmail: 'jason@thebesthardwoodfloor.com',
+        customerName: project.customer.name,
+        customerEmail: project.customer.email,
+        customerPhone: project.customer.phone,
+        customerAddress: project.customer.address,
+        customerCity: project.customer.city,
+        customerState: project.customer.state,
+        customerZip: project.customer.zip_code,
+        projectName: project.project_name,
+        floorType: getFloorTypeLabel(project.floor_type),
+        floorSize: getFloorSizeLabel(project.floor_size),
+        finishType: getFinishTypeLabel(project.finish_type),
+        stainType: project.stain_type ? getStainTypeLabel(project.stain_type) : undefined,
+        rooms: rooms,
+        stairTreads: project.stair_treads,
+        stairRisers: project.stair_risers,
+        totalSquareFeet: project.total_square_feet,
+        estimatedCost: project.estimated_cost,
+        createdAt: project.created_at,
+      })
+    } else {
+      // Download Contract PDF
+      downloadContractPDF({
+        contractorName: 'Jason W. Dixon',
+        contractorCompany: 'The Best Hardwood Flooring Co.',
+        contractorPhone: '708-762-1003',
+        contractorEmail: 'jason@thebesthardwoodfloor.com',
+        customerName: project.customer.name,
+        customerEmail: project.customer.email,
+        customerPhone: project.customer.phone,
+        customerAddress: project.customer.address,
+        customerCity: project.customer.city,
+        customerState: project.customer.state,
+        customerZip: project.customer.zip_code,
+        projectName: project.project_name,
+        floorType: getFloorTypeLabel(project.floor_type),
+        floorSize: getFloorSizeLabel(project.floor_size),
+        finishType: getFinishTypeLabel(project.finish_type),
+        stainType: project.stain_type ? getStainTypeLabel(project.stain_type) : undefined,
+        rooms: rooms,
+        stairTreads: project.stair_treads,
+        stairRisers: project.stair_risers,
+        totalSquareFeet: project.total_square_feet,
+        estimatedCost: project.estimated_cost,
+        introMessage: project.intro_message || undefined,
+        workDescription: project.work_description || undefined,
+        estimatedDays: project.estimated_days || undefined,
+        startDate: project.start_date || undefined,
+        completionDate: project.completion_date || undefined,
+        customerSignature: project.customer_signature || undefined,
+        customerSignatureDate: project.customer_signature_date || undefined,
+        contractorSignature: project.contractor_signature || undefined,
+        contractorSignatureDate: project.contractor_signature_date || undefined,
+        createdAt: project.created_at,
+      })
     }
   }
 
@@ -369,6 +502,7 @@ function EstimatePageContent() {
                 )}
               </Button>
               <Button
+                onClick={handleDownloadPDF}
                 variant="outline"
                 className="touch-target text-xs sm:text-sm px-3 sm:px-4 py-2 text-amber-600 border-amber-600 hover:bg-amber-50 active:scale-95 transition-transform flex-shrink-0"
               >
@@ -598,6 +732,81 @@ function EstimatePageContent() {
                   startDate={project.start_date}
                   completionDate={project.completion_date}
                 />
+
+                {/* Signature Section */}
+                <div className="border-t border-slate-200 p-8">
+                  <h3 className="text-lg font-bold text-slate-900 mb-6">Digital Signatures</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Customer Signature */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Customer Signature
+                      </label>
+                      {project.customer_signature ? (
+                        <div className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                          <img
+                            src={project.customer_signature}
+                            alt="Customer Signature"
+                            className="h-20 w-full object-contain"
+                          />
+                          <p className="text-xs text-slate-600 mt-2">
+                            Signed: {new Date(project.customer_signature_date!).toLocaleDateString()}
+                          </p>
+                          <Button
+                            onClick={() => setShowCustomerSignature(true)}
+                            variant="outline"
+                            className="mt-2 w-full text-xs"
+                          >
+                            Update Signature
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => setShowCustomerSignature(true)}
+                          variant="outline"
+                          className="w-full border-2 border-dashed border-slate-300 h-24 text-slate-600 hover:border-amber-500 hover:text-amber-600"
+                        >
+                          + Add Customer Signature
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Contractor Signature */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Contractor Signature
+                      </label>
+                      {project.contractor_signature ? (
+                        <div className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                          <img
+                            src={project.contractor_signature}
+                            alt="Contractor Signature"
+                            className="h-20 w-full object-contain"
+                          />
+                          <p className="text-xs text-slate-600 mt-2">
+                            Signed: {new Date(project.contractor_signature_date!).toLocaleDateString()}
+                          </p>
+                          <Button
+                            onClick={() => setShowContractorSignature(true)}
+                            variant="outline"
+                            className="mt-2 w-full text-xs"
+                          >
+                            Update Signature
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => setShowContractorSignature(true)}
+                          variant="outline"
+                          className="w-full border-2 border-dashed border-slate-300 h-24 text-slate-600 hover:border-amber-500 hover:text-amber-600"
+                        >
+                          + Add Contractor Signature
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <ContractEditor
@@ -626,6 +835,23 @@ function EstimatePageContent() {
           </div>
         )}
       </main>
+
+      {/* Signature Modals */}
+      <SignatureModal
+        isOpen={showCustomerSignature}
+        onClose={() => setShowCustomerSignature(false)}
+        onSave={(signatureData) => handleSaveSignature(signatureData, 'customer')}
+        title="Customer Signature"
+        signerName={project?.customer.name || 'Customer'}
+      />
+
+      <SignatureModal
+        isOpen={showContractorSignature}
+        onClose={() => setShowContractorSignature(false)}
+        onSave={(signatureData) => handleSaveSignature(signatureData, 'contractor')}
+        title="Contractor Signature"
+        signerName="Jason W. Dixon"
+      />
     </div>
   )
 }
