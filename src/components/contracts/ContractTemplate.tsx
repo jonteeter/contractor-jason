@@ -197,7 +197,9 @@ export default function ContractTemplate({
 
         {/* Signature Section */}
         <div className="mt-8 pt-8 border-t-2 border-slate-300">
-          <p className="mb-8">Agreed this day of _______________________________,2025.</p>
+          <p className="mb-8">
+            Agreed this day of <strong>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>.
+          </p>
 
           <div className="grid grid-cols-2 gap-8">
             <div>

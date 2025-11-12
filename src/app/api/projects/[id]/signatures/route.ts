@@ -80,6 +80,19 @@ export async function POST(
       );
     }
 
+    // If both signatures are now present, update status to 'approved'
+    if (project.customer_signature && project.contractor_signature && project.status !== 'approved') {
+      const { error: statusUpdateError } = await supabase
+        .from('projects')
+        .update({ status: 'approved' })
+        .eq('id', id)
+        .eq('contractor_id', user.id);
+
+      if (!statusUpdateError) {
+        project.status = 'approved';
+      }
+    }
+
     return NextResponse.json({ success: true, project });
   } catch (error) {
     console.error('Error saving signature:', error);

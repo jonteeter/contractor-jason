@@ -281,7 +281,16 @@ export function generateContractPDF(data: ContractPDFData): jsPDF {
   yPosition += 10;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Agreed this day of _______________________________,2025.', margin, yPosition);
+
+  // Use signature date if signed, otherwise today's date
+  const contractDate = data.customerSignatureDate || data.contractorSignatureDate || new Date().toISOString();
+  const formattedContractDate = new Date(contractDate).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  doc.text(`Agreed this day of ${formattedContractDate}.`, margin, yPosition);
   yPosition += 15;
 
   // Contractor Signature

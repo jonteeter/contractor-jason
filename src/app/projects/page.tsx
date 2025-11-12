@@ -34,6 +34,11 @@ interface Project {
   total_square_feet: number
   estimated_cost: number
   created_at: string
+  customer_signature: string | null
+  customer_signature_date: string | null
+  contractor_signature: string | null
+  contractor_signature_date: string | null
+  estimate_sent_at: string | null
   customer: Customer
 }
 
@@ -95,6 +100,7 @@ export default function ProjectsPage() {
     switch (status) {
       case 'draft': return 'bg-slate-100 text-slate-700'
       case 'quoted': return 'bg-blue-100 text-blue-700'
+      case 'sent': return 'bg-indigo-100 text-indigo-700'
       case 'approved': return 'bg-green-100 text-green-700'
       case 'in_progress': return 'bg-amber-100 text-amber-700'
       case 'completed': return 'bg-purple-100 text-purple-700'
@@ -106,11 +112,26 @@ export default function ProjectsPage() {
     switch (status) {
       case 'draft': return 'Draft'
       case 'quoted': return 'Quoted'
+      case 'sent': return 'Sent'
       case 'approved': return 'Approved'
       case 'in_progress': return 'In Progress'
       case 'completed': return 'Completed'
       default: return status
     }
+  }
+
+  const getSignatureStatus = (project: Project) => {
+    const hasCustomer = !!project.customer_signature
+    const hasContractor = !!project.contractor_signature
+
+    if (hasCustomer && hasContractor) {
+      return { label: 'Signed', color: 'bg-green-100 text-green-700 border border-green-200' }
+    } else if (hasCustomer || hasContractor) {
+      return { label: 'Partially Signed', color: 'bg-yellow-100 text-yellow-700 border border-yellow-200' }
+    } else if (project.estimate_sent_at) {
+      return { label: 'Awaiting Signature', color: 'bg-blue-100 text-blue-700 border border-blue-200' }
+    }
+    return null
   }
 
   const getFloorTypeLabel = (floorType: string) => {
@@ -233,10 +254,15 @@ export default function ProjectsPage() {
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-0">
+                      <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-0 flex-wrap">
                         <span className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)} whitespace-nowrap`}>
                           {getStatusLabel(project.status)}
                         </span>
+                        {getSignatureStatus(project) && (
+                          <span className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-medium ${getSignatureStatus(project)!.color} whitespace-nowrap`}>
+                            ✓ {getSignatureStatus(project)!.label}
+                          </span>
+                        )}
                       </div>
                     </div>
 
