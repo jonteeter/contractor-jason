@@ -1,47 +1,81 @@
-# 🚀 Next Session Prompt for Claude Code
+## Quick Context Rebuild
 
-Copy and paste this into a fresh Claude Code conversation to continue development:
+I'm working on **Tary**, a flooring contractor management app for Jason Dixon.
 
----
+**Please read these files to rebuild context:**
+1. `/memory-bank/activeContext.md` - Current state, recent changes, what's working
+2. `/memory-bank/NEXT_FEATURES.md` - Roadmap and planned features
+3. `/memory-bank/progress.md` - Detailed progress tracker
 
-## Prompt
-
-I'm working on **Tary**, a flooring contractor management app. Phase 1 is complete and production-ready. I need to implement **Phase 2 features** starting with PDF generation and email integration.
-
-**Current Status:**
-- ✅ Full customer-to-contract workflow operational
-- ✅ Mobile-optimized, ~3,760 LOC, zero TypeScript errors
-- ✅ Authentication, database (Supabase), professional contract generation
-- ⚠️ PDF download buttons exist but non-functional
-- ⚠️ Email buttons exist but non-functional
-
-**What I Need:**
-Implement PDF generation for estimates and contracts, then email integration to send PDFs to customers.
-
-**Context Documents:**
-- Read `/memory-bank/activeContext.md` for current state
-- Read `/memory-bank/NEXT_FEATURES.md` for detailed requirements
-- Read `/memory-bank/progress.md` for what's already built
-
-**Start by reading these files, then propose an implementation plan for PDF generation.**
+**After reading those files, I want to work on:** [describe your specific task/bug here]
 
 ---
 
-## Alternative: If You Want to Continue in THIS Session
+## Template for Specific Tasks
 
-I can start implementing PDF generation right now! Just say:
+### For Bug Fixes:
+I'm working on **Tary**. Please read `/memory-bank/activeContext.md` to understand the current state.
 
-**"Start implementing PDF generation for estimates and contracts"**
+**Bug I want to fix:** [describe the bug]
+**Expected behavior:** [what should happen]
+**Current behavior:** [what's actually happening]
+**Relevant files/pages:** [if known]
 
-And I'll:
-1. Research best PDF library for Next.js 15
-2. Create PDF generation utilities
-3. Implement download functionality
-4. Test on both estimate and contract pages
-5. Update documentation
+### For New Features:
+I'm working on **Tary**. Please read:
+- `/memory-bank/activeContext.md` - Current state
+- `/memory-bank/NEXT_FEATURES.md` - See if this feature is already planned
+
+**Feature I want to implement:** [describe the feature]
+**Why it's needed:** [business/user value]
+**Acceptance criteria:** [how to know it's done]
+
+### For Code Improvements:
+I'm working on **Tary**. Please read `/memory-bank/activeContext.md`.
+
+**What I want to improve:** [specific area of code]
+**Why:** [performance, maintainability, etc.]
+**Scope:** [how much should change]
 
 ---
 
-Choose your path:
-- 🆕 **Fresh session** → Copy prompt above
-- ▶️ **Continue now** → Say "Start implementing PDF generation"
+## Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Type check
+npm run type-check
+
+# Build for production
+npm run build
+```
+
+**Test Account:**
+- Email: jason@thebesthardwoodfloor.com
+- Password: [User has this]
+
+**Supabase Dashboard:** https://supabase.com/dashboard/project/eonnbueqowenorscxugz
+
+---
+
+## Key Project Info
+
+- **Tech Stack**: Next.js 15, React 19, TypeScript, Tailwind CSS, Supabase
+- **Current Phase**: Phase 2A Complete (foundational pages done)
+- **Next Phase**: Phase 2B (PDF generation, email integration, digital signatures)
+- **Lines of Code**: ~10,000+
+- **Mobile-First**: All pages optimized for mobile
+- **Build Status**: ✅ Zero TypeScript errors
+
+---
+
+## How to Use This File
+
+1. **Start every session** by asking me to read the memory-bank files
+2. **Be specific** about what you want to work on
+3. **Don't ask for general guidance** - the docs have the roadmap
+4. **Do mention** if you want to deviate from the roadmap
+
+

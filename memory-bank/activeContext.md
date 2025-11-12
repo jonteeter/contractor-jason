@@ -1,74 +1,79 @@
 # Active Context - Current Development State
 
-**Last Updated:** November 10, 2025
-**Current Session Focus:** Documentation Consolidation & Cleanup
+**Last Updated:** November 11, 2025
+**Current Session Focus:** Phase 2A Complete - Foundational App Pages
 **Development Server:** `npm run dev` → http://localhost:3000
-**Production Status:** Phase 1 Complete & Deployed
+**Production Status:** Phase 2A Complete & Ready for Testing
 
 ---
 
-## 🎯 Current Status: Phase 1 COMPLETE ✅
+## 🎯 Current Status: Phase 2A COMPLETE ✅
 
 ### Application State
-The Tary contractor app is fully functional and serving its primary user (Jason Dixon) in production. All core workflows are implemented, tested, and mobile-optimized.
+The Tary contractor app now includes all foundational pages expected in a professional application. Core workflow (Phase 1) remains stable, with new management pages added for Profile, Settings, Customers, and improved navigation.
 
 ### What's Working Right Now
+
 1. **Authentication** ✅
    - Email/password login via Supabase
    - Row Level Security protecting all data
-   - Cookie-based sessions
+   - Cookie-based sessions with refreshContractor() support
    - Protected routes with middleware
 
-2. **Complete Workflow** ✅
+2. **Complete Core Workflow** ✅
    - Customer intake → Floor selection → Measurements → Estimate → Contract
    - Real-time cost calculations
    - Professional contract generation
    - Projects dashboard with search/filter
 
-3. **Mobile-First UI** ✅
+3. **Foundational App Pages** ✅ **NEW**
+   - Profile page with edit functionality
+   - Change password page
+   - Settings page (email, pricing, notifications, regional)
+   - Customers page with search, filter, edit, delete
+   - Customer detail modal with project history
+   - Navigation header with profile dropdown menu
+
+4. **Navigation System** ✅ **NEW**
+   - AppHeader component with profile dropdown
+   - Consistent back button behavior across all pages
+   - Dashboard = hub with full navigation menu
+   - Management pages = back button + profile menu
+   - Workflow pages = simple back button only
+
+5. **Mobile-First UI** ✅
    - Responsive across all breakpoints
    - Touch targets (44px minimum)
    - Safe areas for notched devices
    - Active states for native feel
-   - Icon-only buttons on mobile
 
-4. **Data Persistence** ✅
-   - All data stored in Supabase PostgreSQL
-   - Contractors, customers, projects tables
+6. **Data Persistence** ✅
+   - Contractors, customers, projects, contractor_settings tables
    - Proper foreign key relationships
+   - RLS policies on all tables
    - Automatic timestamps
 
-### Recent Session (Nov 10, 2025)
-**Task**: Deep research + documentation consolidation
+### Recent Session (Nov 11, 2025)
+**Task**: Implement Phase 2A - Foundational App Pages
 
 **What Was Done:**
-- ✅ Comprehensive codebase analysis (~3,760 LOC)
-- ✅ Deleted 4 outdated docs (project-progress.md, database-setup-instructions.md, AUTHENTICATION_FIX.md, MOBILE_OPTIMIZATION_COMPLETE.md)
-- ✅ Updated projectBrief.md with current status
-- ✅ Updated productContext.md with implemented features
-- ✅ This file rewritten with accurate context
+- ✅ Created Profile page with edit functionality ([/profile](../src/app/profile/page.tsx))
+- ✅ Created Change Password page ([/profile/change-password](../src/app/profile/change-password/page.tsx))
+- ✅ Created Settings page with contractor_settings table ([/settings](../src/app/settings/page.tsx))
+- ✅ Created Customers page with full CRUD operations ([/customers](../src/app/customers/page.tsx))
+- ✅ Created AppHeader component with profile dropdown ([AppHeader.tsx](../src/components/navigation/AppHeader.tsx))
+- ✅ Updated Dashboard to use AppHeader and link to new pages
+- ✅ Fixed navigation flow (customer wizard back button, projects back button)
+- ✅ Added refreshContractor() to AuthContext
+- ✅ Created API routes for profile, settings, customer operations
+- ✅ Database migrations for logo_url and contractor_settings table
+- ✅ TypeScript compilation: 0 errors
 
-**Key Findings:**
-- App is production-ready and stable
-- Several "planned" features have buttons but no implementation (PDF, email)
-- Documentation was scattered and outdated
-- Need clearer roadmap for Phase 2
-
----
-
-## 🚀 Immediate Next Steps (Priority Order)
-
-### This Sprint
-1. **Create README.md** - Quick start guide for new developers
-2. **Create NEXT_FEATURES.md** - Prioritized roadmap
-3. **Create TECHNICAL_DEBT.md** - Known issues tracker
-4. **Rename contract template** - Better file organization
-
-### Next Sprint (Phase 2 Kickoff)
-1. **PDF Generation** - Implement actual download functionality
-2. **Email Integration** - Send estimates to customers
-3. **Digital Signatures** - Capture customer signatures
-4. **Customer List Page** - Dedicated customer management
+**Key Changes:**
+- Lines of Code: ~3,760 → ~10,000+ (with new features)
+- New database table: contractor_settings
+- Navigation philosophy established and implemented
+- All pages mobile-optimized with consistent UX
 
 ---
 
@@ -102,12 +107,26 @@ npm run build
 ### Database Access
 - **Project**: eonnbueqowenorscxugz.supabase.co
 - **Dashboard**: https://supabase.com/dashboard/project/eonnbueqowenorscxugz
-- **Tables**: contractors, customers, projects
+- **Tables**: contractors, customers, projects, contractor_settings
 - **RLS**: Enabled on all tables
+
+### Database Migrations to Apply
+1. [003_add_logo_field.sql](../supabase/migrations/003_add_logo_field.sql) - Adds logo_url to contractors
+2. [004_create_settings_table.sql](../supabase/migrations/004_create_settings_table.sql) - Creates contractor_settings table
 
 ---
 
 ## 💡 Key Patterns Used
+
+### Navigation Pattern
+```typescript
+// Dashboard: Hub with full menu, no back button
+// Management pages: AppHeader with back button + profile menu
+import AppHeader from '@/components/navigation/AppHeader'
+<AppHeader title="Page Name" showBack={true} backHref="/dashboard" />
+
+// Workflow pages: Simple back button only (focused experience)
+```
 
 ### Authentication Pattern
 ```typescript
@@ -118,11 +137,16 @@ const { data, error } = await supabase.auth.signInWithPassword({ email, password
 // Server-side: Use server client in API routes
 import { createClient } from '@/lib/supabase/server'
 const supabase = await createClient()
+
+// Refresh contractor data after updates
+const { refreshContractor } = useAuth()
+await refreshContractor()
 ```
 
 ### Middleware Protection
 ```typescript
-// Protects routes: /dashboard, /customer-wizard, /floor-selection, /measurements, /estimate
+// Protected routes: /dashboard, /profile, /settings, /customers, /projects
+// /customer-wizard, /floor-selection, /measurements, /estimate
 // Redirects to /login if no session cookie
 ```
 
@@ -143,18 +167,46 @@ className="active:scale-95"  // Tactile feedback
 
 ---
 
-## 🐛 Known Issues (Non-Blocking)
+## 🐛 Known Issues
 
-### Warnings in Development
+### Non-Blocking Warnings
 - ⚠️ Viewport/themeColor deprecation warnings (Next.js 15)
   - **Impact**: None - just deprecation notices
   - **Fix**: Move to viewport export (low priority)
 
-### Missing Functionality (Planned)
+### Missing Functionality (Next Phase)
 - ❌ PDF download buttons exist but do nothing
 - ❌ Email buttons exist but don't send
-- ❌ Customers page placeholder on dashboard
 - ❌ No signature capture for contracts
+- ❌ Logo upload field added but Supabase Storage not configured
+
+### User-Reported Issues
+- [User will add specific bugs here in next session]
+
+---
+
+## 📂 Project Structure
+
+### Key Files & Locations
+- **Pages**: `src/app/[route]/page.tsx`
+- **Components**: `src/components/` (ui, navigation, contracts)
+- **API Routes**: `src/app/api/` (contractors, customers, projects)
+- **Auth Context**: `src/contexts/AuthContext.tsx`
+- **Middleware**: `src/middleware.ts`
+- **Database Migrations**: `supabase/migrations/`
+- **Documentation**: `memory-bank/` and root-level docs
+
+### Navigation Flow
+```
+Landing Page (/) → Login (/login) → Dashboard (/dashboard)
+                                         ↓
+                    ┌────────────────────┼────────────────────┐
+                    ↓                    ↓                    ↓
+              Profile (/profile)   Settings (/settings)  Customers (/customers)
+              Projects (/projects)
+                    ↓
+              New Project (/customer-wizard) → Floor Selection → Measurements → Estimate
+```
 
 ---
 
@@ -162,13 +214,14 @@ className="active:scale-95"  // Tactile feedback
 
 ### PDF Generation (High Priority)
 - **Goal**: Download estimate and contract as formatted PDF
-- **Libraries**: jsPDF or react-pdf
+- **Libraries**: jsPDF, react-pdf, or @react-pdf/renderer
 - **Acceptance**: Click "Download PDF" → saves professional document
 
 ### Email Integration (High Priority)
 - **Goal**: Send estimates/contracts to customer email
-- **Service**: SendGrid, Resend, or AWS SES
+- **Service**: Resend (recommended), SendGrid, or AWS SES
 - **Acceptance**: Enter email → customer receives PDF attachment
+- **Note**: Email signature field already exists in Settings
 
 ### Digital Signatures (Medium Priority)
 - **Goal**: Capture customer and contractor signatures
@@ -180,15 +233,15 @@ className="active:scale-95"  // Tactile feedback
 ## 🔄 When to Update This File
 
 Update `activeContext.md` when:
-- Starting a new development session
-- Completing a major feature
-- Discovering new issues or blockers
+- Starting a new development session (update "Last Updated" and "Current Session Focus")
+- Completing a major feature (update "What's Working Right Now")
+- Discovering new issues or blockers (update "Known Issues")
 - Changing development priorities
 - After significant codebase changes
 
 Keep it focused on:
 - **What's happening NOW**
-- **What's next**
+- **What's next** (see NEXT_FEATURES.md for detailed roadmap)
 - **Current blockers**
 - **Environment setup**
 
@@ -196,11 +249,12 @@ Keep it focused on:
 
 ## 📊 Project Health
 
-- **Build Status**: ✅ Passing (zero errors)
+- **Build Status**: ✅ Passing (zero TypeScript errors)
 - **Type Safety**: ✅ Strict mode enabled
-- **Mobile Optimized**: ✅ All pages responsive
-- **Security**: ✅ RLS policies enforced
-- **Performance**: ✅ ~150KB First Load JS
-- **Production**: ✅ Serving real user
+- **Mobile Optimized**: ✅ All pages responsive with 44px touch targets
+- **Security**: ✅ RLS policies enforced on all tables
+- **Performance**: ✅ ~150KB First Load JS (estimated)
+- **Production**: ✅ Serving real user (Jason Dixon)
+- **Lines of Code**: ~10,000+ (Phase 1: ~3,760 → Phase 2A: added ~6,000+)
 
-**Status**: Healthy and ready for Phase 2 features
+**Status**: Phase 2A Complete. Healthy and ready for Phase 2B (PDF, Email, Signatures)

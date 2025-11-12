@@ -1,7 +1,7 @@
 # Tary - Development Progress Tracker
 
-**Last Updated:** November 10, 2025
-**Project Status:** Phase 1 Complete, Phase 2 Planning
+**Last Updated:** November 11, 2025
+**Project Status:** Phase 2A Complete (Foundational Pages)
 **Client:** Jason Dixon (The Best Hardwood Flooring Co.)
 **Payment Model:** $1,000/month ongoing development
 
@@ -11,7 +11,8 @@
 
 ```
 Phase 1 (MVP):        ████████████████████ 100% COMPLETE
-Phase 2 (Features):   ░░░░░░░░░░░░░░░░░░░░   0% NOT STARTED
+Phase 2A (Core Pages): ████████████████████ 100% COMPLETE
+Phase 2B (PDF/Email):  ░░░░░░░░░░░░░░░░░░░░   0% NOT STARTED
 Phase 3 (Platform):   ░░░░░░░░░░░░░░░░░░░░   0% FUTURE
 ```
 
@@ -38,6 +39,8 @@ Phase 3 (Platform):   ░░░░░░░░░░░░░░░░░░░�
 - [x] Contractors table with subscription plans
 - [x] Customers table with full address fields
 - [x] Projects table with floor specs & measurements
+- [x] Contractor_settings table for user preferences **NEW**
+- [x] Logo_url field added to contractors table **NEW**
 - [x] Foreign key relationships
 - [x] Automatic timestamp triggers
 - [x] RLS policies for data isolation
@@ -47,6 +50,8 @@ Phase 3 (Platform):   ░░░░░░░░░░░░░░░░░░░�
 - [supabase/migrations/001_initial_schema.sql](../supabase/migrations/001_initial_schema.sql)
 - [supabase/migrations/002_fix_rls_policies.sql](../supabase/migrations/002_fix_rls_policies.sql)
 - [supabase/migrations/002_add_contract_fields.sql](../supabase/migrations/002_add_contract_fields.sql)
+- [supabase/migrations/003_add_logo_field.sql](../supabase/migrations/003_add_logo_field.sql) **NEW**
+- [supabase/migrations/004_create_settings_table.sql](../supabase/migrations/004_create_settings_table.sql) **NEW**
 
 ### UI Foundation
 - [x] Mobile-first responsive design
@@ -184,7 +189,36 @@ Phase 3 (Platform):   ░░░░░░░░░░░░░░░░░░░�
 - [x] Measurements
 - [x] Estimate & contract
 - [x] Projects list
-- [x] Contract editor (user priority)
+- [x] Contract editor
+- [x] Profile page **NEW**
+- [x] Settings page **NEW**
+- [x] Customers page **NEW**
+
+### Foundational App Pages (Phase 2A) **NEW**
+- [x] Profile page with contractor information edit
+- [x] Change password page with Supabase Auth integration
+- [x] Settings page with email, pricing, notifications, regional settings
+- [x] Customers page with CRUD operations
+- [x] Customer detail modal with project history
+- [x] Customer search and filter (by type: new/existing)
+- [x] Edit customer functionality
+- [x] Delete customer with confirmation
+- [x] Navigation header component (AppHeader) with profile dropdown
+- [x] Profile dropdown menu with Dashboard, Projects, Customers, Profile, Settings, Sign Out
+- [x] Consistent back button behavior across all pages
+- [x] Fixed customer wizard navigation (back to dashboard)
+- [x] Fixed projects page navigation (added back button)
+
+**Files:**
+- [src/app/profile/page.tsx](../src/app/profile/page.tsx)
+- [src/app/profile/change-password/page.tsx](../src/app/profile/change-password/page.tsx)
+- [src/app/settings/page.tsx](../src/app/settings/page.tsx)
+- [src/app/customers/page.tsx](../src/app/customers/page.tsx)
+- [src/components/navigation/AppHeader.tsx](../src/components/navigation/AppHeader.tsx)
+- [src/app/api/contractors/profile/route.ts](../src/app/api/contractors/profile/route.ts)
+- [src/app/api/contractors/settings/route.ts](../src/app/api/contractors/settings/route.ts)
+- [src/app/api/customers/[id]/route.ts](../src/app/api/customers/[id]/route.ts)
+- [src/app/api/customers/[id]/projects/route.ts](../src/app/api/customers/[id]/projects/route.ts)
 
 ---
 
@@ -194,7 +228,7 @@ Phase 3 (Platform):   ░░░░░░░░░░░░░░░░░░░�
 
 ---
 
-## ❌ NOT STARTED (Planned for Phase 2)
+## ❌ NOT STARTED (Planned for Phase 2B)
 
 ### PDF Export (High Priority)
 - [ ] Install PDF generation library (jsPDF or react-pdf)
