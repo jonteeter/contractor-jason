@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { 
+import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
@@ -10,13 +10,15 @@ import {
   Ruler,
   Sparkles,
   DollarSign,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react'
+import type { ContractorTemplate } from '@/lib/templates/defaultHardwoodTemplate'
 
-type FloorType = 'red-oak' | 'white-oak' | 'linoleum' | null
-type FloorSize = '2inch' | '2.5inch' | '3inch' | null
-type FinishType = 'stain' | 'gloss' | 'semi-gloss' | 'option' | null
-type StainType = 'natural' | 'golden-oak' | 'spice-brown' | null
+type FloorType = string | null
+type FloorSize = string | null
+type FinishType = string | null
+type StainType = string | null
 
 interface FloorSelection {
   type: FloorType
@@ -36,8 +38,10 @@ interface PricingData {
 export default function FloorSelectionPage() {
   const [step, setStep] = useState(1)
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [projectId, setProjectId] = useState<string | null>(null)
+  const [template, setTemplate] = useState<ContractorTemplate | null>(null)
   const [selection, setSelection] = useState<FloorSelection>({
     type: null,
     size: null,
@@ -54,68 +58,50 @@ export default function FloorSelectionPage() {
 
   const totalSteps = 4
 
-  // Load project ID from localStorage on mount
+  // Load project ID and template from API
   useEffect(() => {
-    const storedProjectId = localStorage.getItem('currentProjectId')
-    if (storedProjectId) {
-      setProjectId(storedProjectId)
-    } else {
-      setError('No project found. Please start from customer wizard.')
+    const init = async () => {
+      const storedProjectId = localStorage.getItem('currentProjectId')
+      if (storedProjectId) {
+        setProjectId(storedProjectId)
+      } else {
+        setError('No project found. Please start from customer wizard.')
+        setLoading(false)
+        return
+      }
+
+      // Fetch contractor's template
+      try {
+        const response = await fetch('/api/contractor-templates')
+        if (!response.ok) {
+          throw new Error('Failed to load template')
+        }
+        const templateData = await response.json()
+        setTemplate(templateData)
+      } catch (err) {
+        console.error('Error loading template:', err)
+        setError('Failed to load floor options. Please try again.')
+      } finally {
+        setLoading(false)
+      }
     }
+
+    init()
   }, [])
-
-  // Floor type data with realistic pricing
-  const floorTypes = {
-    'red-oak': {
-      name: 'Red Oak',
-      description: 'Classic American hardwood with prominent grain patterns and warm tones',
-      basePrice: 8.50,
-      features: ['Durable & Long-lasting', 'Classic Grain Pattern', 'Warm Natural Tones', 'Easy to Refinish'],
-      image: '🌳'
-    },
-    'white-oak': {
-      name: 'White Oak',
-      description: 'Premium hardwood with subtle grain and excellent durability',
-      basePrice: 9.75,
-      features: ['Premium Quality', 'Subtle Grain Pattern', 'Excellent Durability', 'Modern Appeal'],
-      image: '🪵'
-    },
-    'linoleum': {
-      name: 'Linoleum',
-      description: 'Eco-friendly resilient flooring with modern designs and easy maintenance',
-      basePrice: 4.25,
-      features: ['Eco-Friendly', 'Water Resistant', 'Easy Maintenance', 'Comfortable Underfoot'],
-      image: '📐'
-    }
-  }
-
-  const floorSizes = {
-    '2inch': { name: '2"', multiplier: 1.0, description: 'Traditional narrow planks' },
-    '2.5inch': { name: '2.5"', multiplier: 1.15, description: 'Popular medium width' },
-    '3inch': { name: '3"', multiplier: 1.25, description: 'Wide plank premium look' }
-  }
-
-  const finishTypes = {
-    'stain': { name: 'Stain', price: 2.50, description: 'Custom color with protective coating' },
-    'gloss': { name: 'Gloss', price: 1.75, description: 'High-shine protective finish' },
-    'semi-gloss': { name: 'Semi-Gloss', price: 1.50, description: 'Balanced shine and durability' },
-    'option': { name: 'Custom Option', price: 3.00, description: 'Specialized finish consultation' }
-  }
-
-  const stainTypes = {
-    'natural': { name: 'Natural', price: 0, description: 'Original wood color', color: '#D2B48C' },
-    'golden-oak': { name: 'Golden Oak', price: 0.75, description: 'Warm golden tones', color: '#DAA520' },
-    'spice-brown': { name: 'Spice Brown', price: 0.75, description: 'Rich brown finish', color: '#8B4513' }
-  }
 
   // Calculate pricing whenever selection changes
   useEffect(() => {
-    if (selection.type) {
-      const basePrice = floorTypes[selection.type].basePrice
-      const sizeMultiplier = selection.size ? floorSizes[selection.size].multiplier : 1
-      const finishPrice = selection.finish ? finishTypes[selection.finish].price : 0
-      const stainPrice = selection.stain ? stainTypes[selection.stain].price : 0
-      
+    if (selection.type && template) {
+      const floorType = template.floor_types.find(ft => ft.key === selection.type)
+      const floorSize = template.floor_sizes.find(fs => fs.key === selection.size)
+      const finishType = template.finish_types.find(ft => ft.key === selection.finish)
+      const stainType = template.stain_types.find(st => st.key === selection.stain)
+
+      const basePrice = floorType?.basePrice || 0
+      const sizeMultiplier = floorSize?.multiplier || 1
+      const finishPrice = finishType?.price || 0
+      const stainPrice = stainType?.price || 0
+
       const totalPerSqFt = (basePrice * sizeMultiplier) + finishPrice + stainPrice
 
       setPricing({
@@ -126,7 +112,7 @@ export default function FloorSelectionPage() {
         totalPerSqFt
       })
     }
-  }, [selection])
+  }, [selection, template])
 
   const handleNext = async () => {
     if (step < totalSteps) {
@@ -147,42 +133,17 @@ export default function FloorSelectionPage() {
     setError('')
 
     try {
-      // Map frontend values to database enum values
-      const floorTypeMap: Record<string, string> = {
-        'red-oak': 'red_oak',
-        'white-oak': 'white_oak',
-        'linoleum': 'linoleum'
-      }
-
-      const floorSizeMap: Record<string, string> = {
-        '2inch': '2_inch',
-        '2.5inch': '2_5_inch',
-        '3inch': '3_inch'
-      }
-
-      const finishTypeMap: Record<string, string> = {
-        'stain': 'stain',
-        'gloss': 'gloss',
-        'semi-gloss': 'semi_gloss',
-        'option': 'option'
-      }
-
-      const stainTypeMap: Record<string, string> = {
-        'natural': 'natural',
-        'golden-oak': 'golden_oak',
-        'spice-brown': 'spice_brown'
-      }
-
+      // Keys are already in the correct format (matching database enums)
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          floor_type: floorTypeMap[selection.type || ''],
-          floor_size: floorSizeMap[selection.size || ''],
-          finish_type: finishTypeMap[selection.finish || ''],
-          stain_type: selection.stain ? stainTypeMap[selection.stain] : null,
+          floor_type: selection.type,
+          floor_size: selection.size,
+          finish_type: selection.finish,
+          stain_type: selection.stain,
         }),
       })
 
@@ -225,6 +186,8 @@ export default function FloorSelectionPage() {
   }
 
   const renderStep = () => {
+    if (!template) return null
+
     switch (step) {
       case 1:
         return (
@@ -239,12 +202,12 @@ export default function FloorSelectionPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
-              {Object.entries(floorTypes).map(([key, floor]) => (
+              {template.floor_types.map((floor) => (
                 <button
-                  key={key}
-                  onClick={() => setSelection({ ...selection, type: key as FloorType })}
+                  key={floor.key}
+                  onClick={() => setSelection({ ...selection, type: floor.key })}
                   className={`group relative p-5 sm:p-6 rounded-2xl sm:rounded-3xl border-2 transition-all duration-300 text-left touch-target active:scale-[0.98] ${
-                    selection.type === key
+                    selection.type === floor.key
                       ? 'border-amber-500 bg-amber-50 shadow-lg'
                       : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-md'
                   }`}
@@ -256,7 +219,7 @@ export default function FloorSelectionPage() {
                       {floor.description}
                     </p>
                     <div className="text-2xl font-bold text-amber-600">
-                      ${floor.basePrice}/sq ft
+                      ${floor.basePrice.toFixed(2)}/sq ft
                     </div>
                   </div>
 
@@ -269,7 +232,7 @@ export default function FloorSelectionPage() {
                     ))}
                   </div>
 
-                  {selection.type === key && (
+                  {selection.type === floor.key && (
                     <div className="absolute top-4 right-4">
                       <CheckCircle className="w-6 h-6 text-amber-500" />
                     </div>
@@ -293,32 +256,32 @@ export default function FloorSelectionPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {Object.entries(floorSizes).map(([key, size]) => (
+              {template.floor_sizes.map((size) => (
                 <button
-                  key={key}
-                  onClick={() => setSelection({ ...selection, size: key as FloorSize })}
+                  key={size.key}
+                  onClick={() => setSelection({ ...selection, size: size.key })}
                   className={`group relative p-8 rounded-3xl border-2 transition-all duration-300 text-center ${
-                    selection.size === key
+                    selection.size === size.key
                       ? 'border-amber-500 bg-amber-50 shadow-lg'
                       : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-md'
                   }`}
                 >
                   <div className={`p-4 rounded-2xl mx-auto mb-4 w-16 h-16 flex items-center justify-center transition-colors duration-200 ${
-                    selection.size === key
+                    selection.size === size.key
                       ? 'bg-amber-500 text-white'
                       : 'bg-slate-100 text-slate-600 group-hover:bg-amber-100 group-hover:text-amber-600'
                   }`}>
                     <Ruler className="w-8 h-8" />
                   </div>
-                  
+
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">{size.name}</h3>
                   <p className="text-slate-600 mb-4">{size.description}</p>
-                  
+
                   <div className="text-sm text-amber-600 font-medium">
                     {size.multiplier > 1 ? `+${((size.multiplier - 1) * 100).toFixed(0)}% premium` : 'Standard pricing'}
                   </div>
 
-                  {selection.size === key && (
+                  {selection.size === size.key && (
                     <div className="absolute top-4 right-4">
                       <CheckCircle className="w-6 h-6 text-amber-500" />
                     </div>
@@ -342,32 +305,32 @@ export default function FloorSelectionPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-              {Object.entries(finishTypes).map(([key, finish]) => (
+              {template.finish_types.map((finish) => (
                 <button
-                  key={key}
-                  onClick={() => setSelection({ ...selection, finish: key as FinishType, stain: key === 'stain' ? selection.stain : null })}
+                  key={finish.key}
+                  onClick={() => setSelection({ ...selection, finish: finish.key, stain: finish.key === 'stain' ? selection.stain : null })}
                   className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-center ${
-                    selection.finish === key
+                    selection.finish === finish.key
                       ? 'border-amber-500 bg-amber-50 shadow-lg'
                       : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-md'
                   }`}
                 >
                   <div className={`p-4 rounded-2xl mx-auto mb-4 w-16 h-16 flex items-center justify-center transition-colors duration-200 ${
-                    selection.finish === key
+                    selection.finish === finish.key
                       ? 'bg-amber-500 text-white'
                       : 'bg-slate-100 text-slate-600 group-hover:bg-amber-100 group-hover:text-amber-600'
                   }`}>
                     <Palette className="w-8 h-8" />
                   </div>
-                  
+
                   <h3 className="text-lg font-bold text-slate-900 mb-2">{finish.name}</h3>
                   <p className="text-slate-600 text-sm mb-4">{finish.description}</p>
-                  
+
                   <div className="text-sm font-medium text-amber-600">
-                    +${finish.price}/sq ft
+                    +${finish.price.toFixed(2)}/sq ft
                   </div>
 
-                  {selection.finish === key && (
+                  {selection.finish === finish.key && (
                     <div className="absolute top-4 right-4">
                       <CheckCircle className="w-6 h-6 text-amber-500" />
                     </div>
@@ -397,29 +360,29 @@ export default function FloorSelectionPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {Object.entries(stainTypes).map(([key, stain]) => (
+              {template.stain_types.map((stain) => (
                 <button
-                  key={key}
-                  onClick={() => setSelection({ ...selection, stain: key as StainType })}
+                  key={stain.key}
+                  onClick={() => setSelection({ ...selection, stain: stain.key })}
                   className={`group relative p-8 rounded-3xl border-2 transition-all duration-300 text-center ${
-                    selection.stain === key
+                    selection.stain === stain.key
                       ? 'border-amber-500 bg-amber-50 shadow-lg'
                       : 'border-slate-200 bg-white hover:border-amber-300 hover:shadow-md'
                   }`}
                 >
-                  <div 
+                  <div
                     className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white shadow-lg"
                     style={{ backgroundColor: stain.color }}
                   />
-                  
+
                   <h3 className="text-xl font-bold text-slate-900 mb-2">{stain.name}</h3>
                   <p className="text-slate-600 mb-4">{stain.description}</p>
-                  
+
                   <div className="text-sm font-medium text-amber-600">
-                    {stain.price > 0 ? `+$${stain.price}/sq ft` : 'No additional cost'}
+                    {stain.price > 0 ? `+$${stain.price.toFixed(2)}/sq ft` : 'No additional cost'}
                   </div>
 
-                  {selection.stain === key && (
+                  {selection.stain === stain.key && (
                     <div className="absolute top-4 right-4">
                       <CheckCircle className="w-6 h-6 text-amber-500" />
                     </div>
@@ -467,7 +430,7 @@ export default function FloorSelectionPage() {
       </header>
 
       {/* Pricing Summary - Fixed at top when selections are made */}
-      {selection.type && (
+      {selection.type && template && (
         <div className="bg-amber-50 border-b border-amber-200 sticky top-[57px] sm:top-[65px] z-40 flex-shrink-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3">
             <div className="flex items-center justify-between gap-2 sm:gap-4">
@@ -475,10 +438,10 @@ export default function FloorSelectionPage() {
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                   <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 flex-shrink-0" />
                   <span className="font-medium text-slate-700 truncate">
-                    {selection.type && floorTypes[selection.type].name}
-                    {selection.size && <span className="hidden sm:inline"> • {floorSizes[selection.size].name}</span>}
-                    {selection.finish && <span className="hidden md:inline"> • {finishTypes[selection.finish].name}</span>}
-                    {selection.stain && <span className="hidden lg:inline"> • {stainTypes[selection.stain].name}</span>}
+                    {selection.type && template.floor_types.find(ft => ft.key === selection.type)?.name}
+                    {selection.size && <span className="hidden sm:inline"> • {template.floor_sizes.find(fs => fs.key === selection.size)?.name}</span>}
+                    {selection.finish && <span className="hidden md:inline"> • {template.finish_types.find(ft => ft.key === selection.finish)?.name}</span>}
+                    {selection.stain && <span className="hidden lg:inline"> • {template.stain_types.find(st => st.key === selection.stain)?.name}</span>}
                   </span>
                 </div>
               </div>
@@ -496,9 +459,24 @@ export default function FloorSelectionPage() {
 
       {/* Main content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-12 safe-area-bottom">
-        <div className="animate-fade-in">
-          {renderStep()}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 text-amber-500 animate-spin mx-auto mb-4" />
+              <p className="text-slate-600">Loading floor options...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="max-w-md mx-auto text-center py-20">
+            <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-8">
+              <p className="text-red-700 font-medium">{error}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="animate-fade-in">
+            {renderStep()}
+          </div>
+        )}
 
         {/* Navigation */}
         <div className="flex justify-between items-center mt-8 sm:mt-16 max-w-4xl mx-auto gap-3 sm:gap-4">

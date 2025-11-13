@@ -40,6 +40,7 @@ export default function MeasurementsPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [projectId, setProjectId] = useState<string | null>(null)
+  const [pricePerSqFt, setPricePerSqFt] = useState(12.50) // Default, will be loaded from project
   const [measurements, setMeasurements] = useState<MeasurementData>({
     rooms: [
       { id: 1, name: 'Room 1', length: '', width: '', sqft: 0 }
@@ -50,17 +51,63 @@ export default function MeasurementsPage() {
   })
 
   const totalSteps = 3
-  const pricePerSqFt = 12.50 // This would come from floor selection in real app
 
   // Load project ID from localStorage on mount
   useEffect(() => {
     const storedProjectId = localStorage.getItem('currentProjectId')
     if (storedProjectId) {
       setProjectId(storedProjectId)
+      loadProjectPricing(storedProjectId)
     } else {
       setError('No project found. Please start from customer wizard.')
     }
   }, [])
+
+  // Load project pricing from floor selections
+  const loadProjectPricing = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Failed to load project pricing')
+        return
+      }
+
+      const project = data.project
+
+      // Load contractor template to calculate pricing
+      const templateResponse = await fetch('/api/contractor-templates')
+      const templateData = await templateResponse.json()
+
+      if (!templateResponse.ok || !templateData.template) {
+        console.error('Failed to load template')
+        return
+      }
+
+      const template = templateData.template
+
+      // Calculate price per sqft based on floor selections
+      if (project.floor_type && project.floor_size && project.finish_type) {
+        const floorType = template.floor_types.find((f: any) => f.key === project.floor_type)
+        const floorSize = template.floor_sizes.find((s: any) => s.key === project.floor_size)
+        const finishType = template.finish_types.find((f: any) => f.key === project.finish_type)
+        const stainType = project.stain_type
+          ? template.stain_types.find((s: any) => s.key === project.stain_type)
+          : null
+
+        const basePrice = floorType?.basePrice || 0
+        const sizeMultiplier = floorSize?.multiplier || 1
+        const finishPrice = finishType?.price || 0
+        const stainPrice = stainType?.price || 0
+
+        const calculatedPrice = (basePrice * sizeMultiplier) + finishPrice + stainPrice
+        setPricePerSqFt(calculatedPrice)
+      }
+    } catch (err) {
+      console.error('Error loading project pricing:', err)
+    }
+  }
 
   // Calculate square footage for a room
   const calculateRoomSqft = (length: string, width: string): number => {
@@ -89,6 +136,16 @@ export default function MeasurementsPage() {
         }
         return room
       })
+    }))
+  }
+
+  // Update room name
+  const updateRoomName = (id: number, name: string) => {
+    setMeasurements(prev => ({
+      ...prev,
+      rooms: prev.rooms.map(room =>
+        room.id === id ? { ...room, name } : room
+      )
     }))
   }
 
@@ -173,10 +230,13 @@ export default function MeasurementsPage() {
         body: JSON.stringify({
           stair_treads: parseInt(measurements.stairs.treads) || 0,
           stair_risers: parseInt(measurements.stairs.risers) || 0,
+          room_1_name: room1 ? room1.name : null,
           room_1_length: room1 ? parseFloat(room1.length) || null : null,
           room_1_width: room1 ? parseFloat(room1.width) || null : null,
+          room_2_name: room2 ? room2.name : null,
           room_2_length: room2 ? parseFloat(room2.length) || null : null,
           room_2_width: room2 ? parseFloat(room2.width) || null : null,
+          room_3_name: room3 ? room3.name : null,
           room_3_length: room3 ? parseFloat(room3.length) || null : null,
           room_3_width: room3 ? parseFloat(room3.width) || null : null,
           total_square_feet: measurements.totalSqft,
@@ -239,13 +299,19 @@ export default function MeasurementsPage() {
               {measurements.rooms.map((room, index) => (
                 <div key={room.id} className="bg-white rounded-3xl border-2 border-slate-200 p-8">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 flex-1">
                       <div className="p-3 bg-amber-100 rounded-2xl">
                         <Home className="w-6 h-6 text-amber-600" />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900">{room.name}</h3>
+                      <input
+                        type="text"
+                        value={room.name}
+                        onChange={(e) => updateRoomName(room.id, e.target.value)}
+                        className="text-xl font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-300 focus:border-amber-500 outline-none bg-transparent transition-colors px-2 py-1"
+                        placeholder="Room name"
+                      />
                     </div>
-                    
+
                     {measurements.rooms.length > 1 && (
                       <button
                         onClick={() => removeRoom(room.id)}

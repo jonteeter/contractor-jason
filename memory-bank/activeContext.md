@@ -1,16 +1,16 @@
 # Active Context - Current Development State
 
 **Last Updated:** November 11, 2025
-**Current Session Focus:** Phase 2B Complete - Email, PDF, & Signatures
+**Current Session Focus:** Phase 2C Complete - Configurable Templates & Room Names
 **Development Server:** `npm run dev` → http://localhost:3001
-**Production Status:** Phase 2B Complete - Email, PDF & Digital Signatures Ready!
+**Production Status:** Phase 2C Complete - Fully Configurable Contractor Templates!
 
 ---
 
-## 🎯 Current Status: Phase 2B COMPLETE ✅
+## 🎯 Current Status: Phase 2C COMPLETE ✅
 
 ### Application State
-The Tary contractor app now has a COMPLETE digital document workflow! Contractors can generate professional PDFs, capture digital signatures, and send everything via email. No paid 3rd party services required - all free and open source. This is a MAJOR milestone for the platform!
+The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more hardcoded floor types, prices, or room limits. Each contractor can customize their entire product catalog (wood types, sizes, finishes, stains with custom pricing), and customers get named rooms that persist in their project history. This makes the app truly multi-contractor ready while keeping Jason's hardwood floor defaults as a perfect starting point!
 
 ### What's Working Right Now
 
@@ -26,35 +26,51 @@ The Tary contractor app now has a COMPLETE digital document workflow! Contractor
    - Professional contract generation
    - Projects dashboard with search/filter
 
-3. **Foundational App Pages** ✅ **NEW**
+3. **Foundational App Pages** ✅
    - Profile page with edit functionality
    - Change password page
    - Settings page (email, pricing, notifications, regional)
    - Customers page with search, filter, edit, delete
-   - Customer detail modal with project history
+   - Customer detail modal with project history & room-by-room breakdown **NEW**
    - Navigation header with profile dropdown menu
 
-4. **Navigation System** ✅ **NEW**
+4. **Contractor Templates System** ✅ **NEW**
+   - Fully configurable floor types with custom pricing
+   - Configurable floor sizes with multipliers
+   - Configurable finishes and stains
+   - Auto-generated default hardwood template on first login
+   - Templates stored per contractor (multi-tenant ready)
+   - API: `/api/contractor-templates` (GET, POST, PATCH)
+
+5. **Room Naming & History** ✅ **NEW**
+   - Custom room names in measurement flow (e.g., "Master Bedroom", "Kitchen")
+   - Room data persists in project history
+   - Customer detail view shows room-by-room breakdown
+   - Dimensions and square footage per room displayed
+   - Valuable for repeat business and service scheduling
+
+6. **Navigation System** ✅
    - AppHeader component with profile dropdown
    - Consistent back button behavior across all pages
    - Dashboard = hub with full navigation menu
    - Management pages = back button + profile menu
    - Workflow pages = simple back button only
 
-5. **Mobile-First UI** ✅
+7. **Mobile-First UI** ✅
    - Responsive across all breakpoints
    - Touch targets (44px minimum)
    - Safe areas for notched devices
    - Active states for native feel
 
-6. **Data Persistence** ✅
-   - Contractors, customers, projects, contractor_settings tables
+8. **Data Persistence** ✅
+   - Contractors, customers, projects, contractor_settings, contractor_templates tables **UPDATED**
+   - Room name fields (room_1_name, room_2_name, room_3_name) **NEW**
    - Email tracking fields (sent_at, sent_to, email_count)
    - Proper foreign key relationships
    - RLS policies on all tables
    - Automatic timestamps
 
-7. **Email Integration** ✅ **NEW**
+9. **Email Integration** ✅
    - Send estimates to customers via email
    - Beautiful React Email templates
    - Resend API integration
@@ -62,7 +78,7 @@ The Tary contractor app now has a COMPLETE digital document workflow! Contractor
    - Project status: draft → quoted → sent
    - One-click email sending from estimate page
 
-8. **PDF Generation** ✅ **NEW**
+10. **PDF Generation** ✅
    - Professional estimate PDFs with jsPDF
    - Contract PDFs with full legal formatting
    - Auto-generated filenames
@@ -70,7 +86,7 @@ The Tary contractor app now has a COMPLETE digital document workflow! Contractor
    - Embedded signatures in contracts
    - Download from estimate or contract tab
 
-9. **Digital Signatures** ✅ **NEW**
+11. **Digital Signatures** ✅
    - Canvas-based signature capture
    - Works with mouse, trackpad, or touch
    - Customer and contractor signatures
@@ -78,6 +94,28 @@ The Tary contractor app now has a COMPLETE digital document workflow! Contractor
    - Automatic timestamp on signing
    - Update/replace signatures anytime
    - Signatures embedded in contract PDFs
+
+### Recent Session (Nov 11, 2025) - Part 4
+**Task**: Configurable Templates & Room Names (Phase 2C Complete!)
+
+**What Was Done:**
+- ✅ Created `contractor_templates` table (008_create_contractor_templates.sql)
+- ✅ Created `defaultHardwoodTemplate.ts` with sensible defaults
+- ✅ Built `/api/contractor-templates` route (GET, POST, PATCH)
+- ✅ Refactored floor-selection page to load from contractor template
+- ✅ Removed all hardcoded floor types, sizes, finishes, stains
+- ✅ Added room name fields to database (007_add_room_names.sql)
+- ✅ Added room name input to measurements page
+- ✅ Enhanced customer projects API to include room data
+- ✅ Updated customer detail modal with room-by-room breakdown
+- ✅ TypeScript compilation: 0 errors
+
+**Key Architectural Changes:**
+- Floor selection now 100% dynamic from database
+- Template auto-creates on first login with hardwood defaults
+- Each contractor can customize their entire product catalog
+- Room names persist and display in customer history
+- Multi-contractor ready architecture
 
 ### Recent Session (Nov 11, 2025) - Part 3
 **Task**: Implement PDF Generation + Digital Signatures (Phase 2B Complete!)
@@ -156,16 +194,22 @@ npm run build
 1. [003_add_logo_field.sql](../supabase/migrations/003_add_logo_field.sql) - Adds logo_url to contractors
 2. [004_create_settings_table.sql](../supabase/migrations/004_create_settings_table.sql) - Creates contractor_settings table
 3. [005_add_email_tracking.sql](../supabase/migrations/005_add_email_tracking.sql) - Adds email tracking fields ✅
-4. [006_add_signature_fields.sql](../supabase/migrations/006_add_signature_fields.sql) - Adds signature fields **NEW**
+4. [006_add_signature_fields.sql](../supabase/migrations/006_add_signature_fields.sql) - Adds signature fields ✅
+5. [007_add_room_names.sql](../supabase/migrations/007_add_room_names.sql) - Adds room name fields **NEW**
+6. [008_create_contractor_templates.sql](../supabase/migrations/008_create_contractor_templates.sql) - Creates contractor_templates table **NEW**
 
-**To apply migration 006 (REQUIRED for signatures):**
+**To apply migrations 007 & 008 (REQUIRED for templates & room names):**
 ```sql
 -- Run in Supabase SQL Editor
+
+-- Migration 007: Room names
 ALTER TABLE projects
-ADD COLUMN IF NOT EXISTS customer_signature TEXT,
-ADD COLUMN IF NOT EXISTS customer_signature_date TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS contractor_signature TEXT,
-ADD COLUMN IF NOT EXISTS contractor_signature_date TIMESTAMPTZ;
+ADD COLUMN IF NOT EXISTS room_1_name TEXT,
+ADD COLUMN IF NOT EXISTS room_2_name TEXT,
+ADD COLUMN IF NOT EXISTS room_3_name TEXT;
+
+-- Migration 008: See full migration file for contractor_templates table
+-- (Too large to show inline - includes table, indexes, RLS policies)
 ```
 
 ---
@@ -229,6 +273,7 @@ className="active:scale-95"  // Tactile feedback
   - **Fix**: Move to viewport export (low priority)
 
 ### Missing Functionality (Next Phase)
+- ❌ Settings UI for editing templates (API ready, UI not built) **PRIORITY**
 - ❌ PDF attachment to emails (optional enhancement)
 - ❌ Logo upload field added but Supabase Storage not configured
 - ❌ Custom domain for email (currently using resend.dev test domain)

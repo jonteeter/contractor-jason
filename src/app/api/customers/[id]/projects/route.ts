@@ -15,10 +15,26 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all projects for this customer
+    // Get all projects for this customer with room details
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
-      .select('id, project_name, status, estimated_cost, created_at')
+      .select(`
+        id,
+        project_name,
+        status,
+        estimated_cost,
+        total_square_feet,
+        created_at,
+        room_1_name,
+        room_1_length,
+        room_1_width,
+        room_2_name,
+        room_2_length,
+        room_2_width,
+        room_3_name,
+        room_3_length,
+        room_3_width
+      `)
       .eq('customer_id', id)
       .eq('contractor_id', user.id) // Ensure projects belong to this contractor
       .order('created_at', { ascending: false })

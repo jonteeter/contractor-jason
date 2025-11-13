@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import ProductCatalogEditor from '@/components/settings/ProductCatalogEditor'
 
 interface SettingsData {
   email_signature: string
@@ -18,12 +19,26 @@ interface SettingsData {
   timezone: string
 }
 
+interface ContractorTemplate {
+  id: string
+  floor_types: any[]
+  floor_sizes: any[]
+  finish_types: any[]
+  stain_types: any[]
+  template_name: string
+}
+
 export default function SettingsPage() {
   const { user, contractor, loading } = useAuth()
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingSettings, setIsLoadingSettings] = useState(true)
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(true)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showProductCatalog, setShowProductCatalog] = useState(false)
+  const [editingCatalog, setEditingCatalog] = useState(false)
+  const [template, setTemplate] = useState<ContractorTemplate | null>(null)
+  const [editedTemplate, setEditedTemplate] = useState<ContractorTemplate | null>(null)
   const [settings, setSettings] = useState<SettingsData>({
     email_signature: '',
     send_copy_to_self: true,
@@ -45,6 +60,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) {
       loadSettings()
+      loadTemplate()
     }
   }, [user])
 
@@ -60,6 +76,21 @@ export default function SettingsPage() {
       console.error('Error loading settings:', error)
     } finally {
       setIsLoadingSettings(false)
+    }
+  }
+
+  const loadTemplate = async () => {
+    try {
+      const response = await fetch('/api/contractor-templates')
+      const data = await response.json()
+
+      if (response.ok) {
+        setTemplate(data)
+      }
+    } catch (error) {
+      console.error('Error loading template:', error)
+    } finally {
+      setIsLoadingTemplate(false)
     }
   }
 
@@ -102,7 +133,195 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading || isLoadingSettings) {
+  // Template editing functions
+  const handleEditCatalog = () => {
+    setEditedTemplate(template ? JSON.parse(JSON.stringify(template)) : null)
+    setEditingCatalog(true)
+  }
+
+  const handleCancelEdit = () => {
+    setEditedTemplate(null)
+    setEditingCatalog(false)
+  }
+
+  const handleSaveCatalog = async () => {
+    if (!editedTemplate) return
+
+    setIsSaving(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/contractor-templates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          floor_types: editedTemplate.floor_types,
+          floor_sizes: editedTemplate.floor_sizes,
+          finish_types: editedTemplate.finish_types,
+          stain_types: editedTemplate.stain_types,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Product catalog saved successfully!' })
+        setTemplate(editedTemplate)
+        setEditingCatalog(false)
+        setEditedTemplate(null)
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to save catalog' })
+      }
+    } catch (error) {
+      console.error('Error saving catalog:', error)
+      setMessage({ type: 'error', text: 'An unexpected error occurred' })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const updateFloorType = (index: number, field: string, value: any) => {
+    if (!editedTemplate) return
+    const updated = [...editedTemplate.floor_types]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedTemplate({ ...editedTemplate, floor_types: updated })
+  }
+
+  const updateFloorSize = (index: number, field: string, value: any) => {
+    if (!editedTemplate) return
+    const updated = [...editedTemplate.floor_sizes]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedTemplate({ ...editedTemplate, floor_sizes: updated })
+  }
+
+  const updateFinishType = (index: number, field: string, value: any) => {
+    if (!editedTemplate) return
+    const updated = [...editedTemplate.finish_types]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedTemplate({ ...editedTemplate, finish_types: updated })
+  }
+
+  const updateStainType = (index: number, field: string, value: any) => {
+    if (!editedTemplate) return
+    const updated = [...editedTemplate.stain_types]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditedTemplate({ ...editedTemplate, stain_types: updated })
+  }
+
+  const removeFloorType = (index: number) => {
+    if (!editedTemplate) return
+    const updated = editedTemplate.floor_types.filter((_, i) => i !== index)
+    setEditedTemplate({ ...editedTemplate, floor_types: updated })
+  }
+
+  const removeFloorSize = (index: number) => {
+    if (!editedTemplate) return
+    const updated = editedTemplate.floor_sizes.filter((_, i) => i !== index)
+    setEditedTemplate({ ...editedTemplate, floor_sizes: updated })
+  }
+
+  const removeFinishType = (index: number) => {
+    if (!editedTemplate) return
+    const updated = editedTemplate.finish_types.filter((_, i) => i !== index)
+    setEditedTemplate({ ...editedTemplate, finish_types: updated })
+  }
+
+  const removeStainType = (index: number) => {
+    if (!editedTemplate) return
+    const updated = editedTemplate.stain_types.filter((_, i) => i !== index)
+    setEditedTemplate({ ...editedTemplate, stain_types: updated })
+  }
+
+  const addFloorType = () => {
+    if (!editedTemplate) return
+    setEditedTemplate({
+      ...editedTemplate,
+      floor_types: [...editedTemplate.floor_types, {
+        key: 'new_floor',
+        name: 'New Floor Type',
+        description: 'Description',
+        basePrice: 10.00,
+        features: ['Feature 1', 'Feature 2'],
+        image: '📦'
+      }]
+    })
+  }
+
+  const addFloorSize = () => {
+    if (!editedTemplate) return
+    setEditedTemplate({
+      ...editedTemplate,
+      floor_sizes: [...editedTemplate.floor_sizes, {
+        key: 'new_size',
+        name: 'New Size',
+        description: 'Description',
+        multiplier: 1.0
+      }]
+    })
+  }
+
+  const addFinishType = () => {
+    if (!editedTemplate) return
+    setEditedTemplate({
+      ...editedTemplate,
+      finish_types: [...editedTemplate.finish_types, {
+        key: 'new_finish',
+        name: 'New Finish',
+        description: 'Description',
+        price: 2.00
+      }]
+    })
+  }
+
+  const addStainType = () => {
+    if (!editedTemplate) return
+    setEditedTemplate({
+      ...editedTemplate,
+      stain_types: [...editedTemplate.stain_types, {
+        key: 'new_stain',
+        name: 'New Stain',
+        description: 'Description',
+        price: 0.75,
+        color: '#8B4513'
+      }]
+    })
+  }
+
+  const handleSaveTemplate = async (updatedTemplate: ContractorTemplate) => {
+    setIsSaving(true)
+    setMessage(null)
+
+    try {
+      const response = await fetch('/api/contractor-templates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          floor_types: updatedTemplate.floor_types,
+          floor_sizes: updatedTemplate.floor_sizes,
+          finish_types: updatedTemplate.finish_types,
+          stain_types: updatedTemplate.stain_types,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Product catalog saved successfully!' })
+        setTemplate(updatedTemplate)
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to save catalog' })
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      console.error('Error saving catalog:', error)
+      setMessage({ type: 'error', text: 'An unexpected error occurred' })
+      throw error
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (loading || isLoadingSettings || isLoadingTemplate) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -301,6 +520,37 @@ export default function SettingsPage() {
               </label>
             </div>
           </div>
+        </div>
+
+        {/* Product Catalog */}
+        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+          <button
+            onClick={() => setShowProductCatalog(!showProductCatalog)}
+            className="w-full flex items-center justify-between text-left"
+          >
+            <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Product Catalog
+            </h3>
+            <svg
+              className={`w-5 h-5 text-slate-400 transition-transform ${showProductCatalog ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showProductCatalog && template && (
+            <ProductCatalogEditor
+              template={template}
+              onSave={handleSaveTemplate}
+              isSaving={isSaving}
+            />
+          )}
         </div>
 
         {/* Regional Settings */}

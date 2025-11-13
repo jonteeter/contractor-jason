@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import ContractEditor from '@/components/contracts/ContractEditor'
 import ContractTemplate from '@/components/contracts/ContractTemplate'
 import SignatureModal from '@/components/signatures/SignatureModal'
+import ProjectDetailsEditor from '@/components/estimate/ProjectDetailsEditor'
+import MeasurementsEditor from '@/components/estimate/MeasurementsEditor'
 import { downloadEstimatePDF } from '@/lib/pdf/generateEstimatePDF'
 import { downloadContractPDF } from '@/lib/pdf/generateContractPDF'
 import {
@@ -45,10 +47,13 @@ interface Project {
   stain_type: string | null
   stair_treads: number
   stair_risers: number
+  room_1_name?: string | null
   room_1_length: number | null
   room_1_width: number | null
+  room_2_name?: string | null
   room_2_length: number | null
   room_2_width: number | null
+  room_3_name?: string | null
   room_3_length: number | null
   room_3_width: number | null
   total_square_feet: number
@@ -191,6 +196,85 @@ function EstimatePageContent() {
     }
   }
 
+  const handleSaveProjectDetails = async (details: {
+    floor_type: string
+    floor_size: string
+    finish_type: string
+    stain_type: string | null
+  }) => {
+    if (!project) return
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(details)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update project details')
+      }
+
+      const result = await response.json()
+      setProject(result.project)
+    } catch (err) {
+      console.error('Save error:', err)
+      alert('Failed to save project details')
+      throw err
+    }
+  }
+
+  const handleSaveMeasurements = async (measurements: {
+    room_1_name?: string | null
+    room_1_length?: number | null
+    room_1_width?: number | null
+    room_2_name?: string | null
+    room_2_length?: number | null
+    room_2_width?: number | null
+    room_3_name?: string | null
+    room_3_length?: number | null
+    room_3_width?: number | null
+    stair_treads: number
+    stair_risers: number
+  }) => {
+    if (!project) return
+
+    try {
+      // Calculate new total square feet
+      let totalSqft = 0
+      if (measurements.room_1_length && measurements.room_1_width) {
+        totalSqft += measurements.room_1_length * measurements.room_1_width
+      }
+      if (measurements.room_2_length && measurements.room_2_width) {
+        totalSqft += measurements.room_2_length * measurements.room_2_width
+      }
+      if (measurements.room_3_length && measurements.room_3_width) {
+        totalSqft += measurements.room_3_length * measurements.room_3_width
+      }
+      totalSqft += (measurements.stair_treads * 3) + (measurements.stair_risers * 1.5)
+
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...measurements,
+          total_square_feet: totalSqft
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update measurements')
+      }
+
+      const result = await response.json()
+      setProject(result.project)
+    } catch (err) {
+      console.error('Save error:', err)
+      alert('Failed to save measurements')
+      throw err
+    }
+  }
+
   const handleSendEmail = async () => {
     if (!project) return
 
@@ -262,19 +346,19 @@ function EstimatePageContent() {
 
     const rooms = [
       project.room_1_length && project.room_1_width ? {
-        name: 'Room 1',
+        name: project.room_1_name || 'Room 1',
         length: project.room_1_length,
         width: project.room_1_width,
         sqft: project.room_1_length * project.room_1_width
       } : null,
       project.room_2_length && project.room_2_width ? {
-        name: 'Room 2',
+        name: project.room_2_name || 'Room 2',
         length: project.room_2_length,
         width: project.room_2_width,
         sqft: project.room_2_length * project.room_2_width
       } : null,
       project.room_3_length && project.room_3_width ? {
-        name: 'Room 3',
+        name: project.room_3_name || 'Room 3',
         length: project.room_3_length,
         width: project.room_3_width,
         sqft: project.room_3_length * project.room_3_width
@@ -421,19 +505,19 @@ function EstimatePageContent() {
 
   const rooms = [
     project.room_1_length && project.room_1_width ? {
-      name: 'Room 1',
+      name: project.room_1_name || 'Room 1',
       length: project.room_1_length,
       width: project.room_1_width,
       sqft: project.room_1_length * project.room_1_width
     } : null,
     project.room_2_length && project.room_2_width ? {
-      name: 'Room 2',
+      name: project.room_2_name || 'Room 2',
       length: project.room_2_length,
       width: project.room_2_width,
       sqft: project.room_2_length * project.room_2_width
     } : null,
     project.room_3_length && project.room_3_width ? {
-      name: 'Room 3',
+      name: project.room_3_name || 'Room 3',
       length: project.room_3_length,
       width: project.room_3_width,
       sqft: project.room_3_length * project.room_3_width
@@ -565,73 +649,38 @@ function EstimatePageContent() {
               </div>
             </div>
 
-            {/* Project Details */}
-            <div className="border-b border-slate-200 p-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Project Specifications</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <div className="flex items-center mb-2">
-                    <Palette className="w-4 h-4 text-amber-500 mr-2" />
-                    <p className="text-xs text-slate-500">Floor Type</p>
-                  </div>
-                  <p className="font-semibold text-slate-900">{getFloorTypeLabel(project.floor_type)}</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <div className="flex items-center mb-2">
-                    <Ruler className="w-4 h-4 text-amber-500 mr-2" />
-                    <p className="text-xs text-slate-500">Size</p>
-                  </div>
-                  <p className="font-semibold text-slate-900">{getFloorSizeLabel(project.floor_size)}</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <div className="flex items-center mb-2">
-                    <FileText className="w-4 h-4 text-amber-500 mr-2" />
-                    <p className="text-xs text-slate-500">Finish</p>
-                  </div>
-                  <p className="font-semibold text-slate-900">{getFinishTypeLabel(project.finish_type)}</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <div className="flex items-center mb-2">
-                    <Palette className="w-4 h-4 text-amber-500 mr-2" />
-                    <p className="text-xs text-slate-500">Stain</p>
-                  </div>
-                  <p className="font-semibold text-slate-900">{getStainTypeLabel(project.stain_type)}</p>
-                </div>
-              </div>
-            </div>
+            {/* Project Details - Editable */}
+            <ProjectDetailsEditor
+              projectDetails={{
+                floor_type: project.floor_type,
+                floor_size: project.floor_size,
+                finish_type: project.finish_type,
+                stain_type: project.stain_type
+              }}
+              onSave={handleSaveProjectDetails}
+              getFloorTypeLabel={getFloorTypeLabel}
+              getFloorSizeLabel={getFloorSizeLabel}
+              getFinishTypeLabel={getFinishTypeLabel}
+              getStainTypeLabel={getStainTypeLabel}
+            />
 
-            {/* Measurements */}
-            <div className="border-b border-slate-200 p-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Measurements</h3>
-              <div className="space-y-3">
-                {rooms.map((room) => (
-                  <div key={room!.name} className="flex items-center justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-700">{room!.name}</span>
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm text-slate-500">{room!.length}' × {room!.width}'</span>
-                      <span className="font-semibold text-slate-900">{room!.sqft.toFixed(1)} sq ft</span>
-                    </div>
-                  </div>
-                ))}
-                {project.stair_treads > 0 && (
-                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                    <span className="text-slate-700">Stairs</span>
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm text-slate-500">
-                        {project.stair_treads} treads, {project.stair_risers} risers
-                      </span>
-                      <span className="font-semibold text-slate-900">
-                        {((project.stair_treads * 3) + (project.stair_risers * 1.5)).toFixed(1)} sq ft
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center justify-between py-3 bg-amber-50 px-4 rounded-lg">
-                  <span className="font-semibold text-slate-900">Total Square Footage</span>
-                  <span className="text-xl font-bold text-amber-600">{project.total_square_feet.toFixed(1)} sq ft</span>
-                </div>
-              </div>
-            </div>
+            {/* Measurements - Editable */}
+            <MeasurementsEditor
+              measurements={{
+                room_1_name: project.room_1_name,
+                room_1_length: project.room_1_length,
+                room_1_width: project.room_1_width,
+                room_2_name: project.room_2_name,
+                room_2_length: project.room_2_length,
+                room_2_width: project.room_2_width,
+                room_3_name: project.room_3_name,
+                room_3_length: project.room_3_length,
+                room_3_width: project.room_3_width,
+                stair_treads: project.stair_treads,
+                stair_risers: project.stair_risers
+              }}
+              onSave={handleSaveMeasurements}
+            />
 
             {/* Cost Summary */}
             <div className="p-8">

@@ -24,7 +24,17 @@ interface Project {
   project_name: string
   status: string
   estimated_cost: number
+  total_square_feet: number
   created_at: string
+  room_1_name?: string | null
+  room_1_length?: number | null
+  room_1_width?: number | null
+  room_2_name?: string | null
+  room_2_length?: number | null
+  room_2_width?: number | null
+  room_3_name?: string | null
+  room_3_length?: number | null
+  room_3_width?: number | null
 }
 
 export default function CustomersPage() {
@@ -182,6 +192,36 @@ export default function CustomersPage() {
       console.error('Error deleting customer:', error)
       setMessage({ type: 'error', text: 'An unexpected error occurred' })
     }
+  }
+
+  // Get array of rooms with their details
+  const getProjectRooms = (project: Project) => {
+    const rooms = []
+    if (project.room_1_length && project.room_1_width) {
+      rooms.push({
+        name: project.room_1_name || 'Room 1',
+        length: project.room_1_length,
+        width: project.room_1_width,
+        sqft: project.room_1_length * project.room_1_width
+      })
+    }
+    if (project.room_2_length && project.room_2_width) {
+      rooms.push({
+        name: project.room_2_name || 'Room 2',
+        length: project.room_2_length,
+        width: project.room_2_width,
+        sqft: project.room_2_length * project.room_2_width
+      })
+    }
+    if (project.room_3_length && project.room_3_width) {
+      rooms.push({
+        name: project.room_3_name || 'Room 3',
+        length: project.room_3_length,
+        width: project.room_3_width,
+        sqft: project.room_3_length * project.room_3_width
+      })
+    }
+    return rooms
   }
 
   if (loading || isLoadingCustomers) {
@@ -421,27 +461,47 @@ export default function CustomersPage() {
                   <p className="text-sm text-slate-500 py-4">No projects yet</p>
                 ) : (
                   <div className="space-y-3">
-                    {customerProjects.map((project) => (
-                      <Link key={project.id} href={`/estimate?projectId=${project.id}`}>
-                        <div className="p-4 border border-slate-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors cursor-pointer">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-slate-900">{project.project_name}</h4>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              project.status === 'completed' ? 'bg-green-100 text-green-800' :
-                              project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                              project.status === 'quoted' ? 'bg-amber-100 text-amber-800' :
-                              'bg-slate-100 text-slate-800'
-                            }`}>
-                              {project.status.replace('_', ' ')}
-                            </span>
+                    {customerProjects.map((project) => {
+                      const rooms = getProjectRooms(project)
+                      return (
+                        <Link key={project.id} href={`/estimate?projectId=${project.id}`}>
+                          <div className="p-4 border border-slate-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors cursor-pointer">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-slate-900">{project.project_name}</h4>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                project.status === 'quoted' ? 'bg-amber-100 text-amber-800' :
+                                'bg-slate-100 text-slate-800'
+                              }`}>
+                                {project.status.replace('_', ' ')}
+                              </span>
+                            </div>
+
+                            {/* Room Breakdown */}
+                            {rooms.length > 0 && (
+                              <div className="mb-3 p-2 bg-slate-50 rounded-md space-y-1">
+                                {rooms.map((room, idx) => (
+                                  <div key={idx} className="flex items-center justify-between text-xs text-slate-600">
+                                    <span className="font-medium">{room.name}</span>
+                                    <span>{room.length}' × {room.width}' = {room.sqft.toFixed(0)} sq ft</span>
+                                  </div>
+                                ))}
+                                <div className="flex items-center justify-between text-xs font-semibold text-amber-700 pt-1 border-t border-slate-200">
+                                  <span>Total</span>
+                                  <span>{project.total_square_feet.toFixed(0)} sq ft</span>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between text-sm text-slate-600">
+                              <span className="font-semibold text-slate-900">${project.estimated_cost.toLocaleString()}</span>
+                              <span>{new Date(project.created_at).toLocaleDateString()}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between text-sm text-slate-600">
-                            <span>${project.estimated_cost.toLocaleString()}</span>
-                            <span>{new Date(project.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      )
+                    })}
                   </div>
                 )}
               </div>

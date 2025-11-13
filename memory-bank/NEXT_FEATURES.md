@@ -1,394 +1,340 @@
 # Next Features Roadmap
 
 **Project**: Tary Contractor App
-**Last Updated**: November 10, 2025
-**Current Phase**: Phase 1 Complete → Phase 2 Planning
+**Last Updated**: November 11, 2025
+**Current Phase**: Phase 2C Complete → Phase 3 Planning
 
 This document outlines the prioritized roadmap for future development.
 
 ---
 
-## 🎯 Phase 2: Core Enhancements (Next 2-3 Months)
+## ✅ Phase 2: Core Enhancements (COMPLETE!)
 
-### 1. PDF Generation (HIGH PRIORITY) ⭐
+### 1. PDF Generation ✅ COMPLETE
 
-**Status**: Buttons exist but non-functional
-**Estimated Effort**: 1-2 weeks
+**Status**: Fully implemented (Nov 11, 2025)
 **Impact**: HIGH - Enables offline distribution of estimates/contracts
 
-**Requirements**:
-- Download estimate as formatted PDF
-- Download contract as formatted PDF
-- Professional layout matching screen design
-- Company logo included
-- Print-optimized formatting
-
-**Technical Approach**:
-- Library options: `jsPDF`, `react-pdf`, or `pdfmake`
-- Create PDF templates matching current HTML structure
-- Add download endpoint or client-side generation
-- Test across devices and browsers
-
-**Acceptance Criteria**:
-- [ ] Click "Download PDF" button → saves estimate PDF
-- [ ] Click "Download PDF" button → saves contract PDF
-- [ ] PDF includes all customer and project data
-- [ ] PDF format is professional and print-ready
-- [ ] Works on mobile devices
-
-**Files to Create/Modify**:
-- `src/lib/pdf/generateEstimate.ts` (new)
-- `src/lib/pdf/generateContract.ts` (new)
-- `src/app/estimate/page.tsx` (modify)
+**What Was Built**:
+- ✅ Professional estimate PDFs with jsPDF
+- ✅ Contract PDFs with full legal formatting
+- ✅ Client-side generation (instant, no server)
+- ✅ Auto-generated filenames
+- ✅ Works on all devices
+- ✅ Signatures embedded in PDFs
 
 ---
 
-### 2. Email Integration (HIGH PRIORITY) ⭐
+### 2. Email Integration ✅ COMPLETE
 
-**Status**: Email buttons exist but non-functional
-**Estimated Effort**: 1-2 weeks
+**Status**: Fully implemented (Nov 11, 2025)
 **Impact**: HIGH - Customers can receive estimates remotely
 
-**Requirements**:
-- Send estimate to customer email
-- Send contract to customer email
-- Attach PDF automatically
-- Professional email template
-- Track sent status
-
-**Technical Approach**:
-- Email service options: **Resend** (recommended), SendGrid, AWS SES
-- Create email templates with company branding
-- API route for sending emails
-- Store "email_sent" status in projects table
-
-**Acceptance Criteria**:
-- [ ] Click "Email to Customer" → sends email with PDF
-- [ ] Email includes professional message
-- [ ] Customer receives estimate/contract attachment
-- [ ] System tracks when emails were sent
-- [ ] Error handling for failed sends
-
-**Files to Create/Modify**:
-- `src/lib/email/sendEstimate.ts` (new)
-- `src/app/api/projects/[id]/send-email/route.ts` (new)
-- `src/app/estimate/page.tsx` (modify)
-- Add `email_sent_at` column to projects table
-
-**Dependencies**:
-- Requires PDF generation feature (above)
+**What Was Built**:
+- ✅ Send estimates to customer email
+- ✅ Beautiful React Email templates
+- ✅ Resend API integration (free tier)
+- ✅ Email tracking and status updates
+- ✅ Project status transitions (draft → quoted → sent)
+- ✅ One-click email sending from estimate page
 
 ---
 
-### 3. Digital Signatures (MEDIUM PRIORITY) ⭐
+### 3. Digital Signatures ✅ COMPLETE
 
-**Status**: Not started
-**Estimated Effort**: 2-3 weeks
+**Status**: Fully implemented (Nov 11, 2025)
 **Impact**: MEDIUM - Enables fully digital contract workflow
 
-**Requirements**:
-- Capture customer signature on mobile/desktop
-- Capture contractor signature
-- Store signatures as images
-- Display signatures on contract
-- Track signature dates
-- Optional: Email link for customer to sign remotely
-
-**Technical Approach**:
-- Library: `react-signature-canvas`
-- Add signature fields to contracts table
-- Signature capture modal component
-- Store as base64 or upload to Supabase Storage
-
-**Acceptance Criteria**:
-- [ ] "Sign Contract" button opens signature modal
-- [ ] Can draw signature with mouse/touch
-- [ ] Clear and save signature options
-- [ ] Signature appears on contract PDF
-- [ ] Track signature date and name
-- [ ] Works on mobile devices
-
-**Files to Create/Modify**:
-- `src/components/contracts/SignatureCapture.tsx` (new)
-- `src/app/estimate/page.tsx` (modify)
-- Add `customer_signature`, `contractor_signature` to projects table
+**What Was Built**:
+- ✅ Canvas-based signature capture
+- ✅ Works with mouse, trackpad, or touch
+- ✅ Customer and contractor signatures
+- ✅ Signatures stored as base64 PNG in database
+- ✅ Automatic timestamp on signing
+- ✅ Update/replace signatures anytime
+- ✅ Signatures embedded in contract PDFs
 
 ---
 
-### 4. Customer List Page (MEDIUM PRIORITY)
+### 4. Contractor Templates System ✅ COMPLETE (Backend)
 
-**Status**: Dashboard has placeholder link
+**Status**: API complete, UI missing (Nov 11, 2025)
+**Impact**: HIGH - Makes app truly multi-contractor ready
+
+**What Was Built**:
+- ✅ Fully configurable floor types with custom pricing
+- ✅ Configurable floor sizes with multipliers
+- ✅ Configurable finishes and stains
+- ✅ Auto-generated default hardwood template on first login
+- ✅ Templates stored per contractor (multi-tenant ready)
+- ✅ `/api/contractor-templates` API (GET, POST, PATCH)
+- ✅ Floor selection page loads from contractor template
+- ✅ Zero hardcoded values in floor selection
+
+**Missing**: ❌ Settings UI to edit templates (API ready, UI not built)
+
+---
+
+### 5. Room Naming & History ✅ COMPLETE
+
+**Status**: Fully implemented (Nov 11, 2025)
+**Impact**: MEDIUM - Valuable for repeat business tracking
+
+**What Was Built**:
+- ✅ Custom room names in measurement flow
+- ✅ Room data persists in project history
+- ✅ Customer detail view shows room-by-room breakdown
+- ✅ Dimensions and square footage per room displayed
+- ✅ Editable room names (e.g., "Master Bedroom", "Kitchen")
+
+---
+
+## 🎯 Phase 3: Polish & Scale (Next Priority)
+
+### 1. Template Editor UI (HIGH PRIORITY) ⭐
+
+**Status**: Not started (API ready)
 **Estimated Effort**: 1 week
-**Impact**: MEDIUM - Better customer management
+**Impact**: HIGH - Complete the template system
 
 **Requirements**:
-- View all customers in list/grid
-- Search by name, email, phone
-- Filter by customer type (new/existing)
-- Click customer → see all their projects
-- Edit customer information
-- Delete customer (with confirmation)
+- Settings page tab for "Product Catalog"
+- Edit floor types (name, description, price, features, icon)
+- Edit floor sizes (name, description, multiplier)
+- Edit finishes (name, description, price)
+- Edit stains (name, description, price, color picker)
+- Add/remove items from each category
+- Preview changes before saving
+- Restore default hardwood template button
 
 **Technical Approach**:
-- New route: `/customers`
-- API endpoint: `GET /api/customers`
-- Search and filter UI
-- Customer detail modal or page
-- Link to customer's projects
+- New tab in `/src/app/settings/page.tsx`
+- Form component for editing template JSON
+- Use existing `/api/contractor-templates` endpoints
+- Client-side validation
+- Optimistic UI updates
 
 **Acceptance Criteria**:
-- [ ] Dashboard "Customers" link goes to `/customers`
-- [ ] Shows all customers for logged-in contractor
-- [ ] Search by name works
-- [ ] Click customer → shows detail
-- [ ] Can edit customer info
-- [ ] Can view all projects for customer
-
-**Files to Create**:
-- `src/app/customers/page.tsx` (new)
-- `src/app/api/customers/route.ts` (enhance existing)
+- [ ] Contractor can view current template
+- [ ] Contractor can edit all fields
+- [ ] Contractor can add/remove items
+- [ ] Changes save to database
+- [ ] Floor selection page immediately reflects changes
+- [ ] Can restore default template
 
 ---
 
-### 5. Payment Tracking (MEDIUM PRIORITY) 💰
+### 2. Logo Upload & Storage (MEDIUM PRIORITY)
+
+**Status**: Database field exists, storage not configured
+**Estimated Effort**: 3-4 days
+**Impact**: MEDIUM - Professional branding
+
+**Requirements**:
+- Upload company logo in profile or settings
+- Store in Supabase Storage
+- Display logo on estimates and contracts
+- Display logo in PDFs
+- Image size/format validation
+- Crop/resize functionality
+
+**Technical Approach**:
+- Configure Supabase Storage bucket
+- Add upload component to settings page
+- Image optimization before upload
+- Update `logo_url` field in contractors table
+- Modify PDF generation to include logo
+
+---
+
+### 3. Payment Tracking (HIGH PRIORITY) ⭐
+
+**Status**: Requested by user
+**Estimated Effort**: 2-3 weeks
+**Impact**: HIGH - Critical for cash flow management
+
+**Requirements**:
+- Track payment schedule (60/30/10 or custom)
+- Record payment received dates
+- Calculate outstanding balance
+- Mark projects as "paid in full"
+- Payment history view per project
+- Dashboard widget showing outstanding payments
+
+**Technical Approach**:
+- New `payments` table (project_id, amount, date, type, method)
+- Update project detail page with payment section
+- Add payment schedule field to projects
+- Dashboard summary of receivables
+- Optional: Automatic payment reminders
+
+**Acceptance Criteria**:
+- [ ] Set custom payment schedule per project
+- [ ] Record payment received
+- [ ] View payment history
+- [ ] See total outstanding across all projects
+- [ ] Filter projects by payment status
+
+---
+
+### 4. Photo Uploads (MEDIUM PRIORITY)
 
 **Status**: Not started
-**Estimated Effort**: 2 weeks
-**Impact**: MEDIUM - Track payment schedule
+**Estimated Effort**: 1-2 weeks
+**Impact**: MEDIUM - Document work quality
 
 **Requirements**:
-- Track 60% deposit payment
-- Track 30% mid-project payment
-- Track 10% final payment
-- Mark payments as received
-- Calculate outstanding balance
-- Payment history log
+- Upload before photos
+- Upload after photos
+- Attach photos to specific projects
+- Display in project timeline
+- Include in estimate/contract PDFs (optional)
+- Gallery view in project detail
 
 **Technical Approach**:
-- Add payments table to database
-- Payment status UI on project page
-- Payment recording modal
-- Outstanding balance calculation
+- Supabase Storage for images
+- Image optimization and compression
+- New `project_photos` table
+- Photo gallery component
+- Mobile camera integration
 
-**Database Schema**:
+---
+
+### 5. Custom Email Domain (LOW PRIORITY)
+
+**Status**: Currently using resend.dev domain
+**Estimated Effort**: 2-3 days
+**Impact**: LOW - Professional appearance
+
+**Requirements**:
+- Configure custom sending domain in Resend
+- DNS configuration guide
+- Email from contractor's domain
+- Maintain deliverability
+
+---
+
+## 🚀 Phase 4: Advanced Features (Future)
+
+### Multi-Contractor Types
+
+**Vision**: Support contractors beyond hardwood floors
+- Painters (wall measurements, paint types, colors)
+- Electricians (outlets, fixtures, labor hours)
+- Plumbers (fixtures, materials, time estimates)
+- General contractors (room-agnostic templates)
+
+**Key Insight from User**:
+> "He wants it to work for any type of contractor but I think those goals are at odds.
+> If we stay focused on jobs that are square footage based to leverage the room creation
+> stuff we've done that would be a good place to start."
+
+**Recommended Approach**:
+- Phase 1: Painters (similar to flooring - walls have sqft)
+- Phase 2: Other sqft-based trades
+- Phase 3: Time-based trades (electricians, plumbers)
+
+---
+
+### Recurring Service Scheduling
+
+**Vision**: Predict when customers need repeat services
+
+Based on room history data:
+- "John's kitchen floor was refinished 3 years ago"
+- "Typical refinishing interval is 5-7 years"
+- "Send reminder email in 2024"
+
+**Requirements**:
+- Service interval settings per floor type
+- Automatic reminder scheduling
+- Customer communication opt-in
+- CRM-lite features
+
+---
+
+### Team & Multi-User Support
+
+**Vision**: Contractors with employees
+
+**Requirements**:
+- Sub-accounts for employees
+- Role-based permissions
+- Assign projects to team members
+- Time tracking per project
+- Payroll integration (future)
+
+---
+
+## 📊 User Feedback & Priorities
+
+### From User (Nov 11, 2025):
+
+**Core Philosophy**:
+- Keep it "stupid simple" (user's words)
+- Sensible defaults so contractors can start immediately
+- Everything customizable but not required
+- Focus on square footage-based contractor work
+
+**Immediate Needs**:
+1. ✅ Room naming → DONE
+2. ✅ Configurable templates → DONE (API only)
+3. ❌ Template editor UI → NEXT PRIORITY
+4. ❌ Payment tracking → HIGH PRIORITY
+
+**Long-term Vision**:
+- Multi-contractor support (different trades)
+- Stay focused on sqft-based work
+- Leverage room/dimension tracking for repeat business
+- "Know when they should want the next floor or painting"
+
+---
+
+## 🔄 Active Development Notes
+
+### Database Migrations Pending
+
+User needs to run these migrations in Supabase:
+
 ```sql
-CREATE TABLE payments (
-  id UUID PRIMARY KEY,
-  project_id UUID REFERENCES projects(id),
-  amount NUMERIC NOT NULL,
-  payment_type TEXT, -- 'deposit', 'mid', 'final'
-  payment_date DATE,
-  payment_method TEXT, -- 'check', 'cash', 'card', etc.
-  notes TEXT,
-  created_at TIMESTAMPTZ
-);
+-- Migration 007: Room names
+ALTER TABLE projects
+ADD COLUMN IF NOT EXISTS room_1_name TEXT,
+ADD COLUMN IF NOT EXISTS room_2_name TEXT,
+ADD COLUMN IF NOT EXISTS room_3_name TEXT;
+
+-- Migration 008: Contractor templates
+-- See file: supabase/migrations/008_create_contractor_templates.sql
+-- (Full migration creates contractor_templates table with RLS)
 ```
 
-**Acceptance Criteria**:
-- [ ] Project page shows payment schedule
-- [ ] Can mark payment as received
-- [ ] Shows outstanding balance
-- [ ] Payment history visible
-- [ ] Calculates amounts automatically (60/30/10)
+### TypeScript Status
+✅ Zero errors (as of Nov 11, 2025)
+
+### Production Status
+- Phase 2C complete and ready for production
+- User (Jason Dixon) actively using app
+- All core features functional
 
 ---
 
-### 6. Photo Uploads (LOW PRIORITY) 📸
+## 📝 Notes for Next Session
 
-**Status**: Not started
-**Estimated Effort**: 2 weeks
-**Impact**: LOW - Nice to have for project documentation
+### Lowest Hanging Fruit:
+1. **Template Editor UI** - API is ready, just need forms
+2. **Logo Upload** - Field exists, just need Supabase Storage config
+3. **Payment Tracking** - Most requested, high value
 
-**Requirements**:
-- Upload before/after photos
-- Store in Supabase Storage
-- Gallery view for project
-- Photo captions
-- Image compression
+### Technical Debt:
+- None identified - codebase is clean and well-structured
+- All TypeScript errors resolved
+- Mobile-optimized and responsive
 
-**Technical Approach**:
-- Use Supabase Storage buckets
-- Image upload component
-- Compress images before upload
-- Store references in database
-
-**Acceptance Criteria**:
-- [ ] Can upload photos to project
-- [ ] Photos displayed in gallery
-- [ ] Before/after categorization
-- [ ] Works on mobile camera
-- [ ] Image compression working
+### User Education Needed:
+- How to customize templates (once UI is built)
+- Payment tracking workflow (when built)
+- Email domain configuration (when ready)
 
 ---
 
-## 🚀 Phase 3: Platform Expansion (Future - 6+ Months)
-
-### Multi-Contractor Support 🏢
-
-**Impact**: TRANSFORMATIVE - Turns single-user app into SaaS platform
-
-**Major Changes Required**:
-- Multi-tenant data isolation (already mostly done with RLS)
-- Contractor registration and onboarding
-- Subscription management (Stripe integration)
-- Billing system
-- Super admin dashboard
-- Contractor switching UI
-- Different pricing tiers (Basic, Professional, Enterprise)
-
-**Estimated Effort**: 2-3 months
-
----
-
-### Sales Team Management 👥
-
-**Impact**: HIGH - Allows contractors to add team members
-
-**Requirements**:
-- Invite team members to contractor account
-- Role-based permissions (admin, sales person)
-- Project assignment to team members
-- Team member activity tracking
-- Performance metrics
-
-**Estimated Effort**: 1-2 months
-
-**Dependencies**:
-- Requires multi-contractor support
-
----
-
-### Mobile Native App 📱
-
-**Impact**: MEDIUM - Better mobile experience, offline support
-
-**Requirements**:
-- iOS and Android apps using Capacitor
-- Offline data storage with sync
-- Push notifications
-- Native camera integration
-- App store distribution
-
-**Estimated Effort**: 2-3 months
-
-**Technical Approach**:
-- Install Capacitor
-- Configure for iOS and Android
-- Implement offline storage (SQLite)
-- Build and test on real devices
-- Submit to app stores
-
----
-
-### GPS Time Tracking ⏱️
-
-**Impact**: MEDIUM - For contractors with mobile teams
-
-**Requirements**:
-- Clock in/out at jobsites
-- GPS verification
-- Geofencing for jobsite boundaries
-- Time tracking reports
-- Location history
-
-**Estimated Effort**: 3-4 weeks
-
-**Dependencies**:
-- Requires mobile app or browser location permissions
-
----
-
-### Digital Business Cards 🎴
-
-**Impact**: LOW - Marketing/lead generation tool
-
-**Requirements**:
-- Business card templates
-- QR code generation
-- Auto-populate contractor info
-- Social media sharing
-- Lead capture
-
-**Estimated Effort**: 2-3 weeks
-
----
-
-## 📊 Priority Matrix
-
-| Feature | Priority | Effort | Impact | Phase |
-|---------|----------|--------|--------|-------|
-| PDF Generation | ⭐⭐⭐ | 1-2w | HIGH | 2 |
-| Email Integration | ⭐⭐⭐ | 1-2w | HIGH | 2 |
-| Digital Signatures | ⭐⭐ | 2-3w | MEDIUM | 2 |
-| Customer List | ⭐⭐ | 1w | MEDIUM | 2 |
-| Payment Tracking | ⭐⭐ | 2w | MEDIUM | 2 |
-| Photo Uploads | ⭐ | 2w | LOW | 2 |
-| Multi-Contractor | ⭐⭐⭐ | 2-3m | TRANS | 3 |
-| Sales Team Mgmt | ⭐⭐⭐ | 1-2m | HIGH | 3 |
-| Mobile App | ⭐⭐ | 2-3m | MEDIUM | 3 |
-| GPS Tracking | ⭐⭐ | 3-4w | MEDIUM | 3 |
-| Business Cards | ⭐ | 2-3w | LOW | 3 |
-
----
-
-## 🎯 Recommended Sprint Plan
-
-### Sprint 1 (2 weeks): PDF + Email
-- Week 1: PDF generation for estimates and contracts
-- Week 2: Email integration with PDF attachments
-
-**Deliverable**: Customer can receive estimates/contracts via email
-
----
-
-### Sprint 2 (2 weeks): Signatures + Customers
-- Week 1: Digital signature capture
-- Week 2: Customer list page
-
-**Deliverable**: Fully digital contract workflow + better customer management
-
----
-
-### Sprint 3 (2 weeks): Payment Tracking
-- Week 1: Payment schema and API
-- Week 2: Payment tracking UI
-
-**Deliverable**: Track 60/30/10 payment schedule
-
----
-
-### Sprint 4 (2 weeks): Polish & Photos
-- Week 1: Bug fixes and UI improvements
-- Week 2: Photo upload feature
-
-**Deliverable**: Phase 2 complete, production-ready enhancements
-
----
-
-## 💭 Feature Requests Log
-
-Track user-requested features here:
-
-| Date | Feature | Requested By | Priority | Status |
-|------|---------|--------------|----------|--------|
-| TBD | TBD | TBD | TBD | TBD |
-
----
-
-## 🚫 Out of Scope (Not Planned)
-
-Features we've decided NOT to build:
-
-- Accounting/bookkeeping integration
-- Inventory management
-- Purchase order system
-- CRM with email campaigns
-- Project scheduling/calendar
-- Material supplier integrations
-
-**Reason**: Focus on core estimate/contract workflow. These features would significantly increase complexity.
-
----
-
-**Next Review Date**: TBD (update after Sprint 1 completion)
-**Status**: Ready to begin Sprint 1 (PDF + Email)
+**End of Roadmap**
