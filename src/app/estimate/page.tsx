@@ -8,6 +8,7 @@ import ContractTemplate from '@/components/contracts/ContractTemplate'
 import SignatureModal from '@/components/signatures/SignatureModal'
 import ProjectDetailsEditor from '@/components/estimate/ProjectDetailsEditor'
 import MeasurementsEditor from '@/components/estimate/MeasurementsEditor'
+import PaymentTracker from '@/components/payments/PaymentTracker'
 import { downloadEstimatePDF } from '@/lib/pdf/generateEstimatePDF'
 import { downloadContractPDF } from '@/lib/pdf/generateContractPDF'
 import {
@@ -69,6 +70,22 @@ interface Project {
   customer_signature_date: string | null
   contractor_signature: string | null
   contractor_signature_date: string | null
+  payment_schedule: '60_30_10' | '50_50' | '100_upfront' | 'custom'
+  deposit_amount: number
+  deposit_paid: boolean
+  deposit_paid_date: string | null
+  deposit_payment_method: string | null
+  progress_payment_amount: number
+  progress_payment_paid: boolean
+  progress_payment_paid_date: string | null
+  progress_payment_method: string | null
+  final_payment_amount: number
+  final_payment_paid: boolean
+  final_payment_paid_date: string | null
+  final_payment_method: string | null
+  total_paid: number
+  balance_due: number
+  payment_notes: string | null
   customer: Customer
 }
 
@@ -271,6 +288,29 @@ function EstimatePageContent() {
     } catch (err) {
       console.error('Save error:', err)
       alert('Failed to save measurements')
+      throw err
+    }
+  }
+
+  const handleSavePayments = async (payments: Partial<Project>) => {
+    if (!project) return
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payments)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update payments')
+      }
+
+      const result = await response.json()
+      setProject(result.project)
+    } catch (err) {
+      console.error('Save error:', err)
+      alert('Failed to save payment information')
       throw err
     }
   }
@@ -753,6 +793,30 @@ function EstimatePageContent() {
                 </p>
               </div>
             </div>
+
+            {/* Payment Tracking */}
+            <PaymentTracker
+              payments={{
+                payment_schedule: project.payment_schedule || '60_30_10',
+                estimated_cost: project.estimated_cost,
+                deposit_amount: project.deposit_amount || 0,
+                deposit_paid: project.deposit_paid || false,
+                deposit_paid_date: project.deposit_paid_date,
+                deposit_payment_method: project.deposit_payment_method,
+                progress_payment_amount: project.progress_payment_amount || 0,
+                progress_payment_paid: project.progress_payment_paid || false,
+                progress_payment_paid_date: project.progress_payment_paid_date,
+                progress_payment_method: project.progress_payment_method,
+                final_payment_amount: project.final_payment_amount || 0,
+                final_payment_paid: project.final_payment_paid || false,
+                final_payment_paid_date: project.final_payment_paid_date,
+                final_payment_method: project.final_payment_method,
+                total_paid: project.total_paid || 0,
+                balance_due: project.balance_due || project.estimated_cost,
+                payment_notes: project.payment_notes
+              }}
+              onSave={handleSavePayments}
+            />
           </div>
         ) : (
           <div>

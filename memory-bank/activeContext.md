@@ -1,16 +1,16 @@
 # Active Context - Current Development State
 
-**Last Updated:** November 11, 2025
-**Current Session Focus:** Phase 2C Complete - Configurable Templates & Room Names
+**Last Updated:** November 12, 2025
+**Current Session Focus:** Phase 2D Complete - Project Editing & Dynamic Pricing
 **Development Server:** `npm run dev` → http://localhost:3001
-**Production Status:** Phase 2C Complete - Fully Configurable Contractor Templates!
+**Production Status:** Phase 2D Complete - Full Project Editing with Auto-Pricing!
 
 ---
 
-## 🎯 Current Status: Phase 2C COMPLETE ✅
+## 🎯 Current Status: Phase 2D COMPLETE ✅
 
 ### Application State
-The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more hardcoded floor types, prices, or room limits. Each contractor can customize their entire product catalog (wood types, sizes, finishes, stains with custom pricing), and customers get named rooms that persist in their project history. This makes the app truly multi-contractor ready while keeping Jason's hardwood floor defaults as a perfect starting point!
+The Tary contractor app is now a complete, production-ready flooring contractor management system! Features include fully configurable contractor templates, room naming, customer history with room breakdowns, FULL PROJECT EDITING capabilities, and AUTOMATIC DYNAMIC PRICING that recalculates costs whenever floor specs or measurements change. No more manual price adjustments - the system handles everything automatically based on the contractor's custom pricing template!
 
 ### What's Working Right Now
 
@@ -49,20 +49,30 @@ The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more
    - Dimensions and square footage per room displayed
    - Valuable for repeat business and service scheduling
 
-6. **Navigation System** ✅
+6. **Project Editing & Dynamic Pricing** ✅ **NEW**
+   - Full inline editing on estimate page
+   - Edit floor type, size, finish, stain on existing projects
+   - Add/edit/remove rooms from any project
+   - Automatic price recalculation on any change
+   - Template-driven pricing (uses contractor's custom rates)
+   - Zero manual calculations required
+   - Components: ProjectDetailsEditor, MeasurementsEditor
+   - Shared pricing utility: calculateProjectCost.ts
+
+7. **Navigation System** ✅
    - AppHeader component with profile dropdown
    - Consistent back button behavior across all pages
    - Dashboard = hub with full navigation menu
    - Management pages = back button + profile menu
    - Workflow pages = simple back button only
 
-7. **Mobile-First UI** ✅
+8. **Mobile-First UI** ✅
    - Responsive across all breakpoints
    - Touch targets (44px minimum)
    - Safe areas for notched devices
    - Active states for native feel
 
-8. **Data Persistence** ✅
+9. **Data Persistence** ✅
    - Contractors, customers, projects, contractor_settings, contractor_templates tables **UPDATED**
    - Room name fields (room_1_name, room_2_name, room_3_name) **NEW**
    - Email tracking fields (sent_at, sent_to, email_count)
@@ -70,7 +80,7 @@ The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more
    - RLS policies on all tables
    - Automatic timestamps
 
-9. **Email Integration** ✅
+10. **Email Integration** ✅
    - Send estimates to customers via email
    - Beautiful React Email templates
    - Resend API integration
@@ -78,7 +88,7 @@ The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more
    - Project status: draft → quoted → sent
    - One-click email sending from estimate page
 
-10. **PDF Generation** ✅
+11. **PDF Generation** ✅
    - Professional estimate PDFs with jsPDF
    - Contract PDFs with full legal formatting
    - Auto-generated filenames
@@ -86,7 +96,7 @@ The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more
    - Embedded signatures in contracts
    - Download from estimate or contract tab
 
-11. **Digital Signatures** ✅
+12. **Digital Signatures** ✅
    - Canvas-based signature capture
    - Works with mouse, trackpad, or touch
    - Customer and contractor signatures
@@ -95,7 +105,29 @@ The Tary contractor app now has FULLY CONFIGURABLE contractor templates! No more
    - Update/replace signatures anytime
    - Signatures embedded in contract PDFs
 
-### Recent Session (Nov 11, 2025) - Part 4
+### Recent Session (Nov 12, 2025) - Part 5
+**Task**: Project Editing & Dynamic Pricing (Phase 2D Complete!)
+
+**What Was Done:**
+- ✅ Created ProjectDetailsEditor component (inline editing for floor specs)
+- ✅ Created MeasurementsEditor component (add/edit/remove rooms)
+- ✅ Created shared pricing utility (calculateProjectCost.ts)
+- ✅ Updated PATCH API to auto-recalculate pricing on every change
+- ✅ Updated measurements page to load correct pricing from floor selection
+- ✅ Integrated both editors into estimate page
+- ✅ Removed warning messages, added auto-pricing confirmations
+- ✅ Updated Project interface with room_name fields throughout
+- ✅ Updated room name references in PDF generation
+- ✅ TypeScript compilation: 0 errors
+
+**Key Architectural Changes:**
+- Automatic price recalculation on any project update
+- Template-driven pricing using contractor's custom rates
+- Shared pricing logic eliminates code duplication
+- Full project editing capability without leaving estimate page
+- Professional inline editing UX with save/cancel
+
+### Previous Session (Nov 11, 2025) - Part 4
 **Task**: Configurable Templates & Room Names (Phase 2C Complete!)
 
 **What Was Done:**
@@ -273,12 +305,15 @@ className="active:scale-95"  // Tactile feedback
   - **Fix**: Move to viewport export (low priority)
 
 ### Missing Functionality (Next Phase)
-- ❌ Settings UI for editing templates (API ready, UI not built) **PRIORITY**
+- ✅ ~~Settings UI for editing templates~~ **COMPLETE!**
+- ✅ ~~Project editing capability~~ **COMPLETE!**
 - ❌ PDF attachment to emails (optional enhancement)
 - ❌ Logo upload field added but Supabase Storage not configured
 - ❌ Custom domain for email (currently using resend.dev test domain)
 - ❌ Payment tracking (60/30/10 payment schedule)
 - ❌ Photo uploads for before/after
+- ❌ Project search/filter on projects page
+- ❌ Export to CSV/Excel for accounting
 
 ### User-Reported Issues
 - [User will add specific bugs here in next session]
@@ -355,6 +390,6 @@ Keep it focused on:
 - **Security**: ✅ RLS policies enforced on all tables
 - **Performance**: ✅ ~150KB First Load JS (estimated)
 - **Production**: ✅ Serving real user (Jason Dixon)
-- **Lines of Code**: ~10,000+ (Phase 1: ~3,760 → Phase 2A: added ~6,000+)
+- **Lines of Code**: ~12,000+ (Phase 1: ~3,760 → Phase 2A-D: added ~8,000+)
 
-**Status**: Phase 2A Complete. Healthy and ready for Phase 2B (PDF, Email, Signatures)
+**Status**: Phase 2D Complete. Production-ready contractor management system!

@@ -1,65 +1,47 @@
 # Ready for Next Session
 
-**Date**: November 11, 2025
-**Status**: Phase 2B COMPLETE! 🎉🎉🎉
+**Date**: November 12, 2025
+**Status**: Phase 2D COMPLETE! 🎉🎉🎉
 
 ---
 
-## ⚠️ IMPORTANT: Apply Database Migration!
+## 🎉 What We Just Built - Project Editing & Dynamic Pricing!
 
-**Before testing signatures, run this SQL in Supabase:**
+### ✅ Full Project Editing
+- **ProjectDetailsEditor** component for inline editing of floor specs
+- **MeasurementsEditor** component for adding/editing/removing rooms
+- Edit floor type, size, finish, stain on existing projects
+- Add rooms to projects that were created without them
+- Remove or rename rooms at any time
+- Professional inline editing UX with save/cancel
+- Mobile-friendly design
 
-1. Go to: https://supabase.com/dashboard/project/eonnbueqowenorscxugz
-2. Click "SQL Editor"
-3. Run:
+### ✅ Automatic Dynamic Pricing
+- **calculateProjectCost** utility for shared pricing logic
+- Automatic price recalculation on ANY project update
+- Template-driven pricing using contractor's custom rates
+- API automatically recalculates when you change:
+  - Floor type (Red Oak → White Oak = different base price)
+  - Floor size (2" → 5" = different multiplier)
+  - Finish type (different finish prices)
+  - Stain selection (adds stain price)
+  - Any room measurements (recalculates total sqft)
+- Measurements page now loads correct pricing from floor selection
+- NO MORE MANUAL PRICE ADJUSTMENTS! 🎊
 
-```sql
--- Migration 006: Signature Fields (REQUIRED for signatures!)
-ALTER TABLE projects
-ADD COLUMN IF NOT EXISTS customer_signature TEXT,
-ADD COLUMN IF NOT EXISTS customer_signature_date TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS contractor_signature TEXT,
-ADD COLUMN IF NOT EXISTS contractor_signature_date TIMESTAMPTZ;
+**Pricing Formula:**
+```
+pricePerSqFt = (basePrice × sizeMultiplier) + finishPrice + stainPrice
+estimatedCost = pricePerSqFt × totalSquareFeet
 ```
 
-**PDFs work without this, but signatures require the migration!**
-
----
-
-## 🎉 What We Just Built - MASSIVE Session!
-
-### Part 1: ✅ Email Integration
-- Send estimates via email (Resend + React Email)
-- Email tracking & status updates
-- Works perfectly! (tested with your Gmail)
-
-### Part 2: ✅ PDF Generation
-- Professional estimate PDFs with jsPDF
-- Contract PDFs with legal formatting
-- Download button working on both tabs
-- Client-side generation (instant, no server!)
-- Auto-generated filenames
-
-### Part 3: ✅ Digital Signatures
-- Canvas-based signature capture modal
-- Customer & contractor signatures
-- Signatures stored as base64 PNG in database
-- Signatures automatically embedded in contract PDFs
-- Touch/mouse/trackpad support
-- Update signatures anytime
-
-**All FREE! No paid 3rd party services!** 🎊
-
-**New Documentation:**
-- [EMAIL_SETUP.md](EMAIL_SETUP.md) - Email integration guide
-- [PDF_AND_SIGNATURES.md](PDF_AND_SIGNATURES.md) - **Complete PDF & signatures guide** ⭐
-
 **New Code Files:**
-- [src/lib/pdf/generateEstimatePDF.ts](src/lib/pdf/generateEstimatePDF.ts)
-- [src/lib/pdf/generateContractPDF.ts](src/lib/pdf/generateContractPDF.ts)
-- [src/components/signatures/SignatureModal.tsx](src/components/signatures/SignatureModal.tsx)
-- [src/app/api/projects/[id]/signatures/route.ts](src/app/api/projects/[id]/signatures/route.ts)
-- [supabase/migrations/006_add_signature_fields.sql](supabase/migrations/006_add_signature_fields.sql)
+- [src/lib/pricing/calculateProjectCost.ts](src/lib/pricing/calculateProjectCost.ts) - Shared pricing utility
+- [src/components/estimate/ProjectDetailsEditor.tsx](src/components/estimate/ProjectDetailsEditor.tsx) - Floor spec editor
+- [src/components/estimate/MeasurementsEditor.tsx](src/components/estimate/MeasurementsEditor.tsx) - Room editor
+- Updated: [src/app/api/projects/[id]/route.ts](src/app/api/projects/[id]/route.ts) - Auto-pricing on PATCH
+- Updated: [src/app/measurements/page.tsx](src/app/measurements/page.tsx) - Load correct pricing
+- Updated: [src/app/estimate/page.tsx](src/app/estimate/page.tsx) - Integrated editors
 
 ---
 
@@ -155,8 +137,8 @@ npm run build
 ## Key Project Info
 
 - **Tech Stack**: Next.js 15, React 19, TypeScript, Tailwind CSS, Supabase, Resend
-- **Current Phase**: Phase 2B Email Integration Complete ✅
-- **Next Phase**: PDF generation, digital signatures, payment tracking
+- **Current Phase**: Phase 2D Project Editing & Dynamic Pricing Complete ✅
+- **Next Phase**: Payment tracking, project search/filter, export features
 - **Lines of Code**: ~10,000+
 - **Mobile-First**: All pages optimized for mobile
 - **Build Status**: ✅ Zero TypeScript errors
