@@ -1,25 +1,26 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
+    { media: '(prefers-color-scheme: dark)', color: '#1e40af' }
+  ],
+}
+
 export const metadata: Metadata = {
   title: 'Lotus Contractor App',
   description: 'Professional flooring contractor management system - Mobile-first design for jobsite efficiency',
   keywords: ['contractor', 'flooring', 'construction', 'mobile', 'estimates', 'contracts'],
   authors: [{ name: 'Tary Development Team' }],
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false, // Prevent zoom on form inputs
-  },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
-    { media: '(prefers-color-scheme: dark)', color: '#1e40af' }
-  ],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

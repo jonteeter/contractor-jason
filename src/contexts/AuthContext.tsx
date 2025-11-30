@@ -45,17 +45,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setLoading(false)
       }
+    }).catch((error) => {
+      // Handle auth errors gracefully (e.g., invalid refresh token on Safari)
+      console.error('🔐 AuthContext: Session error:', error)
+      setUser(null)
+      setLoading(false)
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('🔐 AuthContext: Auth state changed:', _event, session?.user?.email || 'No user')
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchContractor(session.user.id)
-      } else {
+      try {
+        console.log('🔐 AuthContext: Auth state changed:', _event, session?.user?.email || 'No user')
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          fetchContractor(session.user.id)
+        } else {
+          setContractor(null)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('🔐 AuthContext: Auth state change error:', error)
+        setUser(null)
         setContractor(null)
         setLoading(false)
       }
