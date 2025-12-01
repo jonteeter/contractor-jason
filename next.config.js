@@ -6,11 +6,12 @@ const nextConfig = {
   images: {
     domains: ['eonnbueqowenorscxugz.supabase.co'],
   },
-  // PWA configuration for offline functionality
+  // Headers for security and cache control
   async headers() {
     return [
       {
-        source: '/(.*)',
+        // HTML pages - no caching to ensure fresh content
+        source: '/:path*',
         headers: [
           {
             key: 'X-Frame-Options',
@@ -23,6 +24,20 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+      {
+        // Static assets can be cached (Next.js adds hashes to filenames)
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

@@ -69,6 +69,21 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${inter.className} antialiased`}>
+        {/* Unregister any stale service workers */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for (var registration of registrations) {
+                    registration.unregister();
+                    console.log('Unregistered stale service worker');
+                  }
+                });
+              }
+            `,
+          }}
+        />
         <AuthProvider>
           {children}
         </AuthProvider>
