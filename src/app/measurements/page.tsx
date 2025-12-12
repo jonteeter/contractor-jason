@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { 
+import {
   ArrowLeft,
   ArrowRight,
   Calculator,
@@ -14,6 +14,7 @@ import {
   DollarSign,
   Ruler
 } from 'lucide-react'
+import { RoomPhotoUpload } from '@/components/measurements/RoomPhotoUpload'
 
 interface RoomMeasurement {
   id: number
@@ -21,6 +22,7 @@ interface RoomMeasurement {
   length: string
   width: string
   sqft: number
+  photoUrl: string | null
 }
 
 interface StairMeasurement {
@@ -43,7 +45,7 @@ export default function MeasurementsPage() {
   const [pricePerSqFt, setPricePerSqFt] = useState(12.50) // Default, will be loaded from project
   const [measurements, setMeasurements] = useState<MeasurementData>({
     rooms: [
-      { id: 1, name: 'Room 1', length: '', width: '', sqft: 0 }
+      { id: 1, name: 'Room 1', length: '', width: '', sqft: 0, photoUrl: null }
     ],
     stairs: { treads: '', risers: '' },
     totalSqft: 0,
@@ -160,10 +162,21 @@ export default function MeasurementsPage() {
           name: `Room ${newId}`,
           length: '',
           width: '',
-          sqft: 0
+          sqft: 0,
+          photoUrl: null
         }]
       }))
     }
+  }
+
+  // Update room photo
+  const updateRoomPhoto = (id: number, photoUrl: string | null) => {
+    setMeasurements(prev => ({
+      ...prev,
+      rooms: prev.rooms.map(room =>
+        room.id === id ? { ...room, photoUrl } : room
+      )
+    }))
   }
 
   // Remove a room
@@ -233,12 +246,15 @@ export default function MeasurementsPage() {
           room_1_name: room1 ? room1.name : null,
           room_1_length: room1 ? parseFloat(room1.length) || null : null,
           room_1_width: room1 ? parseFloat(room1.width) || null : null,
+          room_1_photo_url: room1 ? room1.photoUrl : null,
           room_2_name: room2 ? room2.name : null,
           room_2_length: room2 ? parseFloat(room2.length) || null : null,
           room_2_width: room2 ? parseFloat(room2.width) || null : null,
+          room_2_photo_url: room2 ? room2.photoUrl : null,
           room_3_name: room3 ? room3.name : null,
           room_3_length: room3 ? parseFloat(room3.length) || null : null,
           room_3_width: room3 ? parseFloat(room3.width) || null : null,
+          room_3_photo_url: room3 ? room3.photoUrl : null,
           total_square_feet: measurements.totalSqft,
           estimated_cost: measurements.estimatedCost,
           status: 'quoted', // Update status from draft to quoted
@@ -298,28 +314,40 @@ export default function MeasurementsPage() {
             <div className="max-w-4xl mx-auto space-y-6">
               {measurements.rooms.map((room, index) => (
                 <div key={room.id} className="bg-white rounded-3xl border-2 border-slate-200 p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3 flex-1">
-                      <div className="p-3 bg-amber-100 rounded-2xl">
+                  <div className="flex items-center justify-between gap-3 mb-6">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      <div className="p-3 bg-amber-100 rounded-2xl flex-shrink-0">
                         <Home className="w-6 h-6 text-amber-600" />
                       </div>
                       <input
                         type="text"
                         value={room.name}
                         onChange={(e) => updateRoomName(room.id, e.target.value)}
-                        className="text-xl font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-300 focus:border-amber-500 outline-none bg-transparent transition-colors px-2 py-1"
+                        className="text-xl font-bold text-slate-900 border-b-2 border-transparent hover:border-slate-300 focus:border-amber-500 outline-none bg-transparent transition-colors px-2 py-1 min-w-0 max-w-[150px] sm:max-w-none"
                         placeholder="Room name"
                       />
                     </div>
 
-                    {measurements.rooms.length > 1 && (
-                      <button
-                        onClick={() => removeRoom(room.id)}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Minus className="w-5 h-5" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {projectId && (
+                        <RoomPhotoUpload
+                          roomNumber={index + 1}
+                          projectId={projectId}
+                          photoUrl={room.photoUrl}
+                          onPhotoChange={(url) => updateRoomPhoto(room.id, url)}
+                          disabled={saving}
+                        />
+                      )}
+
+                      {measurements.rooms.length > 1 && (
+                        <button
+                          onClick={() => removeRoom(room.id)}
+                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Minus className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -480,9 +508,18 @@ export default function MeasurementsPage() {
                 <div className="space-y-4">
                   {measurements.rooms.map((room) => (
                     <div key={room.id} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-b-0">
-                      <div>
-                        <span className="font-medium text-slate-900">{room.name}</span>
-                        <span className="text-slate-500 ml-2">({room.length}' × {room.width}')</span>
+                      <div className="flex items-center gap-3">
+                        {room.photoUrl && (
+                          <img
+                            src={room.photoUrl}
+                            alt={`${room.name} photo`}
+                            className="w-12 h-12 rounded-lg object-cover border border-slate-200"
+                          />
+                        )}
+                        <div>
+                          <span className="font-medium text-slate-900">{room.name}</span>
+                          <span className="text-slate-500 ml-2">({room.length}' × {room.width}')</span>
+                        </div>
                       </div>
                       <span className="font-bold text-slate-900">{room.sqft.toFixed(1)} sq ft</span>
                     </div>

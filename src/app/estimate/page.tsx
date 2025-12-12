@@ -51,12 +51,15 @@ interface Project {
   room_1_name?: string | null
   room_1_length: number | null
   room_1_width: number | null
+  room_1_photo_url?: string | null
   room_2_name?: string | null
   room_2_length: number | null
   room_2_width: number | null
+  room_2_photo_url?: string | null
   room_3_name?: string | null
   room_3_length: number | null
   room_3_width: number | null
+  room_3_photo_url?: string | null
   total_square_feet: number
   estimated_cost: number
   status: string
@@ -710,12 +713,15 @@ function EstimatePageContent() {
                 room_1_name: project.room_1_name,
                 room_1_length: project.room_1_length,
                 room_1_width: project.room_1_width,
+                room_1_photo_url: project.room_1_photo_url,
                 room_2_name: project.room_2_name,
                 room_2_length: project.room_2_length,
                 room_2_width: project.room_2_width,
+                room_2_photo_url: project.room_2_photo_url,
                 room_3_name: project.room_3_name,
                 room_3_length: project.room_3_length,
                 room_3_width: project.room_3_width,
+                room_3_photo_url: project.room_3_photo_url,
                 stair_treads: project.stair_treads,
                 stair_risers: project.stair_risers
               }}

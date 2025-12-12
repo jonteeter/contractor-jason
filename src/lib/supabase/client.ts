@@ -132,10 +132,13 @@ export type Database = {
           stair_risers: number
           room_1_length: number | null
           room_1_width: number | null
+          room_1_photo_url: string | null
           room_2_length: number | null
           room_2_width: number | null
+          room_2_photo_url: string | null
           room_3_length: number | null
           room_3_width: number | null
+          room_3_photo_url: string | null
           total_square_feet: number
           estimated_cost: number
           status: 'draft' | 'quoted' | 'approved' | 'in_progress' | 'completed'
@@ -155,10 +158,13 @@ export type Database = {
           stair_risers: number
           room_1_length?: number | null
           room_1_width?: number | null
+          room_1_photo_url?: string | null
           room_2_length?: number | null
           room_2_width?: number | null
+          room_2_photo_url?: string | null
           room_3_length?: number | null
           room_3_width?: number | null
+          room_3_photo_url?: string | null
           total_square_feet: number
           estimated_cost: number
           status?: 'draft' | 'quoted' | 'approved' | 'in_progress' | 'completed'
@@ -178,10 +184,13 @@ export type Database = {
           stair_risers?: number
           room_1_length?: number | null
           room_1_width?: number | null
+          room_1_photo_url?: string | null
           room_2_length?: number | null
           room_2_width?: number | null
+          room_2_photo_url?: string | null
           room_3_length?: number | null
           room_3_width?: number | null
+          room_3_photo_url?: string | null
           total_square_feet?: number
           estimated_cost?: number
           status?: 'draft' | 'quoted' | 'approved' | 'in_progress' | 'completed'

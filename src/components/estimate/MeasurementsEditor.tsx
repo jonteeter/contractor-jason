@@ -9,18 +9,22 @@ interface Room {
   length: number
   width: number
   sqft: number
+  photoUrl?: string | null
 }
 
 interface MeasurementsData {
   room_1_name?: string | null
   room_1_length?: number | null
   room_1_width?: number | null
+  room_1_photo_url?: string | null
   room_2_name?: string | null
   room_2_length?: number | null
   room_2_width?: number | null
+  room_2_photo_url?: string | null
   room_3_name?: string | null
   room_3_length?: number | null
   room_3_width?: number | null
+  room_3_photo_url?: string | null
   stair_treads: number
   stair_risers: number
 }
@@ -179,7 +183,8 @@ export default function MeasurementsEditor({ measurements, onSave }: Props) {
       name: measurements.room_1_name || 'Room 1',
       length: measurements.room_1_length,
       width: measurements.room_1_width,
-      sqft: measurements.room_1_length * measurements.room_1_width
+      sqft: measurements.room_1_length * measurements.room_1_width,
+      photoUrl: measurements.room_1_photo_url
     })
   }
   if (measurements.room_2_length && measurements.room_2_width) {
@@ -187,7 +192,8 @@ export default function MeasurementsEditor({ measurements, onSave }: Props) {
       name: measurements.room_2_name || 'Room 2',
       length: measurements.room_2_length,
       width: measurements.room_2_width,
-      sqft: measurements.room_2_length * measurements.room_2_width
+      sqft: measurements.room_2_length * measurements.room_2_width,
+      photoUrl: measurements.room_2_photo_url
     })
   }
   if (measurements.room_3_length && measurements.room_3_width) {
@@ -195,7 +201,8 @@ export default function MeasurementsEditor({ measurements, onSave }: Props) {
       name: measurements.room_3_name || 'Room 3',
       length: measurements.room_3_length,
       width: measurements.room_3_width,
-      sqft: measurements.room_3_length * measurements.room_3_width
+      sqft: measurements.room_3_length * measurements.room_3_width,
+      photoUrl: measurements.room_3_photo_url
     })
   }
 
@@ -218,7 +225,18 @@ export default function MeasurementsEditor({ measurements, onSave }: Props) {
           {displayRooms.length > 0 ? (
             displayRooms.map((room, idx) => (
               <div key={idx} className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-700">{room.name}</span>
+                <div className="flex items-center gap-3">
+                  {room.photoUrl && (
+                    <img
+                      src={room.photoUrl}
+                      alt={`${room.name} photo`}
+                      className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => window.open(room.photoUrl!, '_blank')}
+                      title="Click to view full size"
+                    />
+                  )}
+                  <span className="text-slate-700">{room.name}</span>
+                </div>
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-slate-500">{room.length}' × {room.width}'</span>
                   <span className="font-semibold text-slate-900">{room.sqft.toFixed(1)} sq ft</span>
