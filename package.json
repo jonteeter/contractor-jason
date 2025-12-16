@@ -1,7 +1,7 @@
 {
-  "name": "lotus",
+  "name": "tary",
   "version": "1.0.0",
-  "description": "Lotus Contractor App - Professional flooring contractor management system",
+  "description": "Tary - Professional flooring contractor management system",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "db:test": "tsx scripts/test-db-connection.ts"
+    "db:test": "tsx scripts/test-db-connection.ts",
+    "feedback:export": "tsx scripts/export-feedback.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -33,6 +34,7 @@
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.4.7",
     "framer-motion": "^11.15.0",
+    "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.469.0",
@@ -60,6 +62,6 @@
     "mobile-first",
     "nextjs"
   ],
-  "author": "Lotus Development Team",
+  "author": "Tary Development Team",
   "license": "MIT"
 }

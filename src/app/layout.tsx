@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,7 +18,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Lotus Contractor App',
+  title: 'Tary - Contractor App',
   description: 'Professional flooring contractor management system - Mobile-first design for jobsite efficiency',
   keywords: ['contractor', 'flooring', 'construction', 'mobile', 'estimates', 'contracts'],
   authors: [{ name: 'Tary Development Team' }],
@@ -43,10 +44,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* PWA meta tags */}
-        <meta name="application-name" content="Lotus Contractor" />
+        <meta name="application-name" content="Tary" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Lotus Contractor" />
+        <meta name="apple-mobile-web-app-title" content="Tary" />
         <meta name="format-detection" content="telephone=yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
@@ -87,6 +88,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        {process.env.NEXT_PUBLIC_FEEDBACK_ENABLED === 'true' && <FeedbackWidget />}
       </body>
     </html>
   )
