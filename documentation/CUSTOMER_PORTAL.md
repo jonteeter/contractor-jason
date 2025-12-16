@@ -2,249 +2,180 @@
 
 ## Overview
 
-Enable customers to view estimates, sign contracts, and pay online via shareable links. No customer login required for basic flow.
+Enable customers to view estimates, sign contracts, and pay online via shareable links. Supports optional customer accounts and multi-contractor relationships.
 
-## Architecture Decision
+## User Types
 
-**Token-based public access** (not customer accounts):
+| Type | Description | Auth Required |
+|------|-------------|---------------|
+| **Contractor** | Pays for app, creates estimates | Yes (Supabase Auth) |
+| **Customer** | Receives estimates from contractors | Optional |
+
+## Architecture Decisions
+
+### Token-Based Access (Phase 1-3)
 - Contractor shares link: `/view/[projectToken]`
-- Token is unique per project, stored in `projects.public_token`
+- Token is unique per project
 - No auth required - anyone with link can view
-- Optional: Add customer accounts later for history/dashboard
+- Simple, no friction for customers
 
-## Database Changes
+### Customer Accounts (Phase 5)
+- Optional - customer can create account to see all their projects
+- Login via email magic link (no password)
+- Dashboard shows projects from ALL contractors they've worked with
+- Each contractor's projects displayed separately
 
+### Multi-Contractor Customer Architecture
+
+**Vision**: A customer (homeowner) can work with multiple contractors (flooring, painting, plumbing). Each contractor uses Tary. The customer sees all their projects organized by contractor.
+
+**Database Schema Change (Future)**:
 ```sql
--- Add to projects table
+-- Current: customers belong to ONE contractor
+customers.contractor_id → contractors.id
+
+-- Future: Many-to-many relationship
+CREATE TABLE contractor_customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  contractor_id UUID REFERENCES contractors(id),
+  customer_id UUID REFERENCES customers(id),
+  relationship TEXT DEFAULT 'client', -- 'client' | 'lead' | 'past'
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(contractor_id, customer_id)
+);
+
+-- Customers get their own auth
+ALTER TABLE customers ADD COLUMN auth_user_id UUID REFERENCES auth.users(id);
+ALTER TABLE customers ADD COLUMN has_account BOOLEAN DEFAULT false;
+```
+
+**Customer Portal View**:
+```
+┌─────────────────────────────────────────────────┐
+│  My Projects                        [Settings]  │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  The Best Hardwood Flooring Co.                 │
+│  ├── Living Room Refinish      [Completed] ✓   │
+│  └── Kitchen Hardwood Install  [In Progress]   │
+│                                                 │
+│  ABC Painting & Decorating                      │
+│  └── Interior Repaint          [Quoted]        │
+│                                                 │
+│  Smith Plumbing                                 │
+│  └── Bathroom Remodel          [Draft]         │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+## Implementation Phases
+
+### Phase 1: Public Estimate View (2-3 days)
+
+**Database changes:**
+```sql
 ALTER TABLE projects ADD COLUMN public_token TEXT UNIQUE;
 ALTER TABLE projects ADD COLUMN token_created_at TIMESTAMPTZ;
 ALTER TABLE projects ADD COLUMN customer_viewed_at TIMESTAMPTZ;
 ALTER TABLE projects ADD COLUMN customer_signed_at TIMESTAMPTZ;
-
--- Index for fast token lookups
 CREATE INDEX idx_projects_public_token ON projects(public_token);
 ```
 
-## Implementation Steps
-
-### Phase 1: Public Estimate View
-
 **Files to create:**
 - `src/app/view/[token]/page.tsx` - Public estimate page
-- `src/app/api/public/[token]/route.ts` - Fetch project by token (no auth)
-- `src/lib/tokens.ts` - Token generation utility
+- `src/app/api/public/[token]/route.ts` - Fetch project by token
+- `src/lib/tokens.ts` - Token generation
 
-**Token generation:**
-```typescript
-// src/lib/tokens.ts
-import { randomBytes } from 'crypto'
+**Features:**
+- View estimate details (read-only)
+- See contractor branding
+- View contract terms
 
-export function generateProjectToken(): string {
-  return randomBytes(16).toString('hex') // 32 char hex string
-}
-```
+### Phase 2: Public Contract Signing (1-2 days)
 
-**API route (no auth):**
-```typescript
-// src/app/api/public/[token]/route.ts
-export async function GET(req, { params }) {
-  const { token } = params
+- Add signature capture to public page
+- Email notification to contractor on signature
+- Auto-update project status to "approved"
 
-  // Use service role to bypass RLS
-  const supabase = createServiceClient()
+### Phase 3: Payment Integration (3-5 days)
 
-  const { data: project } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      customers (name, email, phone, address, city, state, zip_code),
-      contractors (company_name, contact_name, phone, email)
-    `)
-    .eq('public_token', token)
-    .single()
+- Stripe Checkout integration
+- Support deposit/progress/final payments
+- Webhook for payment confirmation
+- Payment tracking in database
 
-  if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+### Phase 4: Customer Self-Service Form (2-3 days)
 
-  // Update viewed timestamp
-  await supabase
-    .from('projects')
-    .update({ customer_viewed_at: new Date().toISOString() })
-    .eq('id', project.id)
+**Contractor initiates with minimal info:**
+1. Contractor has phone number only
+2. Creates customer with just phone
+3. Texts them a link: `/intake/[customerToken]`
+4. Customer fills out their own info:
+   - Name, email, address
+   - Room names and rough dimensions
+   - Preferred contact method
+5. Creates draft project for contractor to review
 
-  return NextResponse.json(project)
-}
-```
+**Or contractor has email only:**
+1. Creates customer with just email
+2. Emails them the intake link
+3. Same flow as above
 
-**Public page:**
-- Display estimate details (read-only)
-- Show contractor info and branding
-- Display contract terms
-- "Sign Contract" button (Phase 2)
-- "Pay Now" button (Phase 3)
+### Phase 5: Customer Accounts (3-5 days)
 
-### Phase 2: Public Contract Signing
+**Customer registration flow:**
+1. Customer receives estimate link
+2. Below estimate: "Create account to track all your projects"
+3. Enter email → receive magic link
+4. Account created, linked to customer record
 
-**Modify existing signature flow:**
-- `src/app/view/[token]/page.tsx` - Add signature capture
-- `src/app/api/public/[token]/sign/route.ts` - Save signature without auth
+**Customer dashboard:**
+- List all projects from all contractors
+- Grouped by contractor
+- Payment history across all
+- Document storage (contracts, receipts)
 
-**Sign API:**
-```typescript
-// src/app/api/public/[token]/sign/route.ts
-export async function POST(req, { params }) {
-  const { token } = params
-  const { signature } = await req.json()
+**Matching existing customers:**
+- When contractor creates customer with email
+- Check if that email has an account
+- Auto-link if exists (with notification)
 
-  const supabase = createServiceClient()
+### Phase 6: Multi-Contractor Support (Future)
 
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id, contractor_id')
-    .eq('public_token', token)
-    .single()
+**When same customer works with new contractor:**
+1. New contractor creates customer with same email
+2. System detects existing customer account
+3. Links new contractor to existing customer
+4. Customer sees new contractor in their dashboard
 
-  if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+**Privacy:**
+- Contractors can only see their own projects with customer
+- Customer sees all their contractors
+- No cross-contractor data sharing
 
-  // Save customer signature
-  await supabase
-    .from('projects')
-    .update({
-      customer_signature: signature,
-      customer_signature_date: new Date().toISOString(),
-      customer_signed_at: new Date().toISOString(),
-      status: 'approved'
-    })
-    .eq('id', project.id)
+## Contractor Workflow Changes
 
-  // Email notification to contractor
-  await sendContractorNotification(project.contractor_id, project.id)
+### Share Estimate Button
+- Added to estimate page
+- Generates token if needed
+- Options:
+  - Copy link
+  - Send via text (opens SMS with link)
+  - Send via email (uses existing email feature)
+  - Generate QR code
 
-  return NextResponse.json({ success: true })
-}
-```
+### Dashboard Updates
+- "Awaiting Signature" filter
+- "Payment Outstanding" filter
+- Notifications when customer views/signs/pays
 
-### Phase 3: Payment Integration
+## Security
 
-**Stripe Checkout approach:**
-```typescript
-// src/app/api/public/[token]/checkout/route.ts
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
-export async function POST(req, { params }) {
-  const { token } = params
-  const { paymentType } = await req.json() // 'deposit' | 'progress' | 'final'
-
-  const supabase = createServiceClient()
-  const { data: project } = await supabase
-    .from('projects')
-    .select('*, customers(*), contractors(*)')
-    .eq('public_token', token)
-    .single()
-
-  // Calculate amount based on payment type
-  const amounts = {
-    deposit: project.estimated_cost * 0.6,
-    progress: project.estimated_cost * 0.3,
-    final: project.estimated_cost * 0.1
-  }
-
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [{
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: `${project.project_name} - ${paymentType} payment`,
-        },
-        unit_amount: Math.round(amounts[paymentType] * 100),
-      },
-      quantity: 1,
-    }],
-    mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_URL}/view/${token}?paid=${paymentType}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_URL}/view/${token}`,
-    metadata: {
-      project_id: project.id,
-      payment_type: paymentType,
-    },
-  })
-
-  return NextResponse.json({ url: session.url })
-}
-```
-
-**Webhook for payment confirmation:**
-```typescript
-// src/app/api/webhooks/stripe/route.ts
-export async function POST(req) {
-  const payload = await req.text()
-  const sig = req.headers.get('stripe-signature')
-
-  const event = stripe.webhooks.constructEvent(
-    payload,
-    sig,
-    process.env.STRIPE_WEBHOOK_SECRET
-  )
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object
-    const { project_id, payment_type } = session.metadata
-
-    // Record payment in database
-    await supabase.from('payments').insert({
-      project_id,
-      amount: session.amount_total / 100,
-      payment_type,
-      payment_date: new Date().toISOString(),
-      stripe_session_id: session.id,
-    })
-
-    // Notify contractor
-    await sendPaymentNotification(project_id, payment_type)
-  }
-
-  return NextResponse.json({ received: true })
-}
-```
-
-### Phase 4: Customer Self-Service Form (Optional)
-
-Allow customer to input room measurements before contractor visit:
-
-**Flow:**
-1. Contractor creates customer record
-2. System generates form link: `/intake/[customerToken]`
-3. Customer fills in room names, rough dimensions
-4. Creates draft project for contractor to review
-
-## UI Components Needed
-
-1. **PublicEstimateView** - Read-only estimate display
-2. **PublicContractView** - Contract with signature capture
-3. **PublicPaymentSection** - Payment buttons and status
-4. **ShareLinkModal** - For contractor to copy/send link
-
-## Contractor-Side Changes
-
-**Add to estimate page:**
-- "Share with Customer" button
-- Generates token if not exists
-- Copy link / Send via email
-- Track: viewed, signed, paid status
-
-**Dashboard updates:**
-- Show projects pending customer signature
-- Show projects with outstanding payments
-- Notification when customer signs/pays
-
-## Security Considerations
-
-1. **Token entropy**: 32-char hex = 128 bits, computationally infeasible to guess
-2. **Rate limiting**: Add rate limits to public endpoints
-3. **Token expiration**: Optional - expire tokens after X days
-4. **Audit trail**: Log all access with IP, timestamp
+1. **Token entropy**: 32-char hex = 128 bits
+2. **Rate limiting**: Public endpoints rate limited
+3. **Token expiration**: Optional X-day expiry
+4. **Audit trail**: Log access with IP, timestamp
+5. **Customer auth**: Magic link only (no passwords to manage)
 
 ## Environment Variables
 
@@ -254,25 +185,25 @@ STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 
-# App URL for callbacks
+# App URL
 NEXT_PUBLIC_URL=https://app.tary.com
 ```
 
-## Migration Plan
+## Effort Summary
 
-1. Add database columns (migration 009)
-2. Build public view page (Phase 1)
-3. Add signature to public page (Phase 2)
-4. Integrate Stripe (Phase 3)
-5. Add share button to contractor UI
-6. Test full flow
+| Phase | Description | Effort |
+|-------|-------------|--------|
+| 1 | Public estimate view | 2-3 days |
+| 2 | Online signing | 1-2 days |
+| 3 | Stripe payments | 3-5 days |
+| 4 | Customer self-service form | 2-3 days |
+| 5 | Customer accounts | 3-5 days |
+| 6 | Multi-contractor | 2-3 days |
+| **Total** | | **13-21 days** |
 
-## Effort Estimate
+## Questions for Jason (See CLIENT_QUESTIONNAIRE.md)
 
-| Phase | Effort |
-|-------|--------|
-| Phase 1: Public view | 2-3 days |
-| Phase 2: Signing | 1-2 days |
-| Phase 3: Payments | 3-5 days |
-| Phase 4: Self-service | 2-3 days |
-| **Total** | **8-13 days** |
+1. Should customers create accounts, or just use links?
+2. Do customers ever need to fill out their own info/measurements?
+3. Which payment types should be online vs in-person?
+4. Should customers be able to message through the app?

@@ -11,23 +11,28 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  AlertCircle,
   Bug,
   Lightbulb,
   HelpCircle,
   ChevronLeft,
   ExternalLink,
-  Trash2,
   Check,
   X,
   Eye,
   RefreshCw,
   Calendar,
+  Building2,
+  Mail,
+  Phone,
+  Crown,
+  UserCheck,
+  UserX,
 } from 'lucide-react'
 
 interface Stats {
   totalCustomers: number
   totalProjects: number
+  totalContractors: number
   projectsByStatus: {
     draft: number
     quoted: number
@@ -44,6 +49,19 @@ interface Stats {
   }>
   totalRevenue: number
   pendingFeedback: number
+}
+
+interface Contractor {
+  id: string
+  email: string
+  company_name: string | null
+  contact_name: string | null
+  phone: string | null
+  subscription_plan: string
+  is_active: boolean
+  created_at: string
+  project_count: number
+  customer_count: number
 }
 
 interface FeedbackItem {
@@ -63,22 +81,29 @@ export default function AdminDashboard() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [contractors, setContractors] = useState<Contractor[]>([])
   const [feedback, setFeedback] = useState<FeedbackItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'feedback'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'feedback'>('overview')
   const [selectedFeedback, setSelectedFeedback] = useState<FeedbackItem | null>(null)
   const [updatingFeedback, setUpdatingFeedback] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
-      const [statsRes, feedbackRes] = await Promise.all([
+      const [statsRes, contractorsRes, feedbackRes] = await Promise.all([
         fetch('/api/admin/stats'),
+        fetch('/api/admin/contractors'),
         fetch('/api/feedback?status=new')
       ])
 
       if (statsRes.ok) {
         const statsData = await statsRes.json()
         setStats(statsData)
+      }
+
+      if (contractorsRes.ok) {
+        const contractorsData = await contractorsRes.json()
+        setContractors(contractorsData)
       }
 
       if (feedbackRes.ok) {
@@ -202,6 +227,17 @@ export default function AdminDashboard() {
             Overview
           </button>
           <button
+            onClick={() => setActiveTab('users')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'users'
+                ? 'bg-blue-500 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Users ({contractors.length})
+          </button>
+          <button
             onClick={() => setActiveTab('feedback')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors relative ${
               activeTab === 'feedback'
@@ -225,15 +261,22 @@ export default function AdminDashboard() {
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <StatCard
-                title="Total Customers"
+                title="Contractors"
+                value={stats.totalContractors}
+                icon={Building2}
+                gradient="from-indigo-500 to-purple-500"
+                onClick={() => setActiveTab('users')}
+              />
+              <StatCard
+                title="Customers"
                 value={stats.totalCustomers}
                 icon={Users}
                 gradient="from-blue-500 to-cyan-500"
               />
               <StatCard
-                title="Total Projects"
+                title="Projects"
                 value={stats.totalProjects}
                 icon={FolderKanban}
                 gradient="from-purple-500 to-pink-500"
@@ -245,7 +288,7 @@ export default function AdminDashboard() {
                 gradient="from-green-500 to-emerald-500"
               />
               <StatCard
-                title="Pending Feedback"
+                title="Feedback"
                 value={stats.pendingFeedback}
                 icon={MessageSquare}
                 gradient="from-orange-500 to-red-500"
@@ -319,6 +362,121 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-blue-400" />
+                Registered Contractors ({contractors.length})
+              </h2>
+            </div>
+
+            {contractors.length === 0 ? (
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-12 text-center">
+                <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">No contractors yet</h3>
+                <p className="text-slate-400">Contractors will appear here when they sign up.</p>
+              </div>
+            ) : (
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-700/50">
+                        <th className="text-left py-4 px-6 text-sm font-medium text-slate-400">Contractor</th>
+                        <th className="text-left py-4 px-6 text-sm font-medium text-slate-400">Contact</th>
+                        <th className="text-left py-4 px-6 text-sm font-medium text-slate-400">Plan</th>
+                        <th className="text-left py-4 px-6 text-sm font-medium text-slate-400">Status</th>
+                        <th className="text-right py-4 px-6 text-sm font-medium text-slate-400">Projects</th>
+                        <th className="text-right py-4 px-6 text-sm font-medium text-slate-400">Customers</th>
+                        <th className="text-left py-4 px-6 text-sm font-medium text-slate-400">Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {contractors.map((contractor) => (
+                        <tr
+                          key={contractor.id}
+                          className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors"
+                        >
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                {(contractor.company_name || contractor.contact_name || 'U')[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="font-medium text-white">
+                                  {contractor.company_name || 'No company name'}
+                                </div>
+                                <div className="text-sm text-slate-400">
+                                  {contractor.contact_name || 'No contact name'}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 text-sm text-slate-300">
+                                <Mail className="w-3 h-3 text-slate-500" />
+                                {contractor.email}
+                              </div>
+                              {contractor.phone && (
+                                <div className="flex items-center gap-2 text-sm text-slate-400">
+                                  <Phone className="w-3 h-3 text-slate-500" />
+                                  {contractor.phone}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                              contractor.subscription_plan === 'enterprise'
+                                ? 'bg-purple-500/20 text-purple-400'
+                                : contractor.subscription_plan === 'professional'
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'bg-slate-700 text-slate-300'
+                            }`}>
+                              {contractor.subscription_plan === 'enterprise' && <Crown className="w-3 h-3" />}
+                              {contractor.subscription_plan.charAt(0).toUpperCase() + contractor.subscription_plan.slice(1)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                              contractor.is_active
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-red-500/20 text-red-400'
+                            }`}>
+                              {contractor.is_active ? (
+                                <>
+                                  <UserCheck className="w-3 h-3" />
+                                  Active
+                                </>
+                              ) : (
+                                <>
+                                  <UserX className="w-3 h-3" />
+                                  Inactive
+                                </>
+                              )}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                            <span className="text-white font-medium">{contractor.project_count}</span>
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                            <span className="text-white font-medium">{contractor.customer_count}</span>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-slate-400">
+                            {new Date(contractor.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

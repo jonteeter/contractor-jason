@@ -13,11 +13,20 @@ export async function GET() {
 
     // Fetch all stats in parallel
     const [
+      contractorsResult,
       customersResult,
       projectsResult,
       recentProjectsResult,
       feedbackCountResult
     ] = await Promise.all([
+      // Total contractors (using REST API with service role to bypass RLS)
+      fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/contractors?select=id`, {
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
+        }
+      }).then(res => res.json()),
+
       // Total customers
       supabase
         .from('customers')
@@ -92,6 +101,7 @@ export async function GET() {
     })
 
     return NextResponse.json({
+      totalContractors: Array.isArray(contractorsResult) ? contractorsResult.length : 0,
       totalCustomers: customersResult.count || 0,
       totalProjects: projects.length,
       projectsByStatus,
