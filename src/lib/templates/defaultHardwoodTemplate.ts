@@ -58,12 +58,68 @@ export const DEFAULT_HARDWOOD_TEMPLATE: ContractorTemplate = {
       image: '🪵'
     },
     {
-      key: 'linoleum',
-      name: 'Linoleum',
-      description: 'Eco-friendly resilient flooring with modern designs and easy maintenance',
-      basePrice: 4.25,
-      features: ['Eco-Friendly', 'Water Resistant', 'Easy Maintenance', 'Comfortable Underfoot'],
-      image: '📐'
+      key: 'cherry',
+      name: 'Cherry',
+      description: 'Rich reddish-brown hardwood that darkens beautifully with age',
+      basePrice: 11.00,
+      features: ['Rich Color', 'Ages Beautifully', 'Smooth Grain', 'Elegant Appearance'],
+      image: '🍒'
+    },
+    {
+      key: 'maple',
+      name: 'Maple',
+      description: 'Light-colored hardwood known for durability and clean appearance',
+      basePrice: 9.00,
+      features: ['Very Hard', 'Light Color', 'Clean Look', 'Scratch Resistant'],
+      image: '🍁'
+    },
+    {
+      key: 'walnut',
+      name: 'Walnut',
+      description: 'Dark premium hardwood with rich chocolate tones',
+      basePrice: 12.50,
+      features: ['Premium Quality', 'Rich Dark Color', 'Distinctive Grain', 'Luxury Appeal'],
+      image: '🌰'
+    },
+    {
+      key: 'hickory',
+      name: 'Hickory',
+      description: 'Extremely hard wood with dramatic color variation',
+      basePrice: 10.25,
+      features: ['Hardest Domestic', 'Color Variation', 'Rustic Character', 'Very Durable'],
+      image: '🪓'
+    },
+    {
+      key: 'ash',
+      name: 'Ash',
+      description: 'Light hardwood with prominent grain similar to oak',
+      basePrice: 8.75,
+      features: ['Light Color', 'Strong Grain', 'Good Value', 'Easy to Stain'],
+      image: '🌿'
+    },
+    {
+      key: 'brazilian_cherry',
+      name: 'Brazilian Cherry',
+      description: 'Exotic hardwood with deep red tones, extremely hard',
+      basePrice: 14.00,
+      features: ['Exotic', 'Very Hard', 'Deep Red Color', 'Dramatic Look'],
+      image: '💎'
+    },
+    {
+      key: 'bamboo',
+      name: 'Bamboo',
+      description: 'Sustainable option with modern look and good durability',
+      basePrice: 6.50,
+      features: ['Eco-Friendly', 'Fast Growing', 'Modern Look', 'Moisture Resistant'],
+      image: '🎋'
+    },
+    {
+      key: 'engineered',
+      name: 'Engineered Hardwood',
+      description: 'Real wood veneer over plywood core, more stable',
+      basePrice: 7.00,
+      features: ['More Stable', 'Real Wood Top', 'Less Expansion', 'Easier Install'],
+      image: '📦'
     }
   ],
   floor_sizes: [
