@@ -25,7 +25,10 @@ import {
   MapPin,
   Palette,
   Ruler,
-  Mail
+  Mail,
+  Share2,
+  Copy,
+  ExternalLink
 } from 'lucide-react'
 
 interface Customer {
@@ -115,6 +118,10 @@ function EstimatePageContent() {
   const [showCustomerSignature, setShowCustomerSignature] = useState(false)
   const [showContractorSignature, setShowContractorSignature] = useState(false)
   const [savingSignature, setSavingSignature] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
+  const [generatingLink, setGeneratingLink] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   // Get project ID from URL or localStorage (client-side only)
   useEffect(() => {
@@ -472,6 +479,43 @@ function EstimatePageContent() {
     }
   }
 
+  const handleShare = async () => {
+    if (!project) return
+
+    setGeneratingLink(true)
+    setShowShareModal(true)
+    setLinkCopied(false)
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}/share`, {
+        method: 'POST'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate share link')
+      }
+
+      const { url } = await response.json()
+      setShareUrl(url)
+    } catch (err) {
+      console.error('Share error:', err)
+      alert('Failed to generate share link')
+      setShowShareModal(false)
+    } finally {
+      setGeneratingLink(false)
+    }
+  }
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch (err) {
+      console.error('Copy failed:', err)
+    }
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -635,6 +679,14 @@ function EstimatePageContent() {
               >
                 <Download className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Download PDF</span>
+              </Button>
+              <Button
+                onClick={handleShare}
+                variant="outline"
+                className="touch-target text-xs sm:text-sm px-3 sm:px-4 py-2 text-green-600 border-green-600 hover:bg-green-50 active:scale-95 transition-transform flex-shrink-0"
+              >
+                <Share2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Share</span>
               </Button>
             </div>
           </div>
@@ -971,6 +1023,82 @@ function EstimatePageContent() {
         title="Contractor Signature"
         signerName="Jason W. Dixon"
       />
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900">Share Estimate</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            {generatingLink ? (
+              <div className="text-center py-8">
+                <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-slate-600">Generating share link...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600">
+                  Share this link with your customer so they can view their estimate online.
+                </p>
+
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <input
+                    type="text"
+                    readOnly
+                    value={shareUrl}
+                    className="flex-1 bg-transparent text-sm text-slate-700 outline-none"
+                  />
+                  <button
+                    onClick={handleCopyLink}
+                    className={`p-2 rounded-lg transition-colors ${
+                      linkCopied
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                    }`}
+                  >
+                    {linkCopied ? (
+                      <CheckCircle className="w-5 h-5" />
+                    ) : (
+                      <Copy className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+
+                {linkCopied && (
+                  <p className="text-sm text-green-600 text-center">Link copied to clipboard!</p>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <a
+                    href={shareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Preview
+                  </a>
+                  <a
+                    href={`sms:?body=View your estimate: ${shareUrl}`}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Phone className="w-4 h-4" />
+                    Text Link
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
