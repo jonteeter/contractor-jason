@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { X, Copy, CheckCircle, Phone, ExternalLink, Zap } from 'lucide-react'
+import { X, Copy, CheckCircle, Phone, ExternalLink, Zap, Mail, MessageSquare } from 'lucide-react'
 
 interface Customer {
   id: string
@@ -853,22 +853,29 @@ export default function CustomersPage() {
                   <p className="text-sm text-green-600 text-center">Link copied!</p>
                 )}
 
-                <div className="flex gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   <a
                     href={quickAddResult.intakeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                    className="flex flex-col items-center justify-center gap-1 px-3 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-5 h-5" />
                     Preview
                   </a>
                   <a
                     href={`sms:${quickAddResult.customer.phone || ''}?body=Hi! Please fill out your info here: ${quickAddResult.intakeUrl}`}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex flex-col items-center justify-center gap-1 px-3 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
-                    <Phone className="w-4 h-4" />
-                    Text Link
+                    <MessageSquare className="w-5 h-5" />
+                    Text
+                  </a>
+                  <a
+                    href={`mailto:${quickAddResult.customer.email || ''}?subject=Complete Your Information&body=Hi${quickAddResult.customer.name ? ` ${quickAddResult.customer.name.split(' ')[0]}` : ''},%0A%0APlease click the link below to fill out your information:%0A%0A${encodeURIComponent(quickAddResult.intakeUrl)}%0A%0AThank you!`}
+                    className="flex flex-col items-center justify-center gap-1 px-3 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  >
+                    <Mail className="w-5 h-5" />
+                    Email
                   </a>
                 </div>
 

@@ -42,6 +42,10 @@ interface EstimatePDFData {
 
   // Dates
   createdAt: string;
+
+  // Signature (optional)
+  customerSignature?: string;
+  customerSignedAt?: string;
 }
 
 export function generateEstimatePDF(data: EstimatePDFData): jsPDF {
@@ -217,6 +221,64 @@ export function generateEstimatePDF(data: EstimatePDFData): jsPDF {
 
   yPosition += 5;
   doc.text('Please contact us with any questions or to proceed with this project.', 105, yPosition, { align: 'center' });
+
+  // Signature section (if signed)
+  if (data.customerSignature) {
+    yPosition += 20;
+
+    // Check if we need a new page
+    if (yPosition > 250) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CUSTOMER APPROVAL', 20, yPosition);
+
+    yPosition += 10;
+
+    // Signature box
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(20, yPosition - 5, 80, 35);
+
+    // Add signature image
+    try {
+      doc.addImage(data.customerSignature, 'PNG', 22, yPosition - 3, 76, 30);
+    } catch {
+      // If image fails, just show placeholder
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.text('[Signature on file]', 60, yPosition + 12, { align: 'center' });
+    }
+
+    yPosition += 35;
+
+    // Signature line
+    doc.setDrawColor(0, 0, 0);
+    doc.line(20, yPosition, 100, yPosition);
+
+    yPosition += 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.customerName, 20, yPosition);
+
+    if (data.customerSignedAt) {
+      const signedDate = new Date(data.customerSignedAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      doc.text(`Date: ${signedDate}`, 120, yPosition);
+    }
+
+    yPosition += 10;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(22, 101, 52);
+    doc.text('Contract approved and signed electronically', 20, yPosition);
+    doc.setTextColor(0, 0, 0);
+  }
 
   // Page number
   const pageCount = doc.getNumberOfPages();

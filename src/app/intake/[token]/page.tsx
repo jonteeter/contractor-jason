@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
+import Link from 'next/link'
 import {
   User,
   Phone,
@@ -9,7 +10,8 @@ import {
   Building2,
   CheckCircle,
   Loader2,
-  MessageSquare
+  MessageSquare,
+  LogIn
 } from 'lucide-react'
 
 interface Contractor {
@@ -190,6 +192,23 @@ export default function CustomerIntakePage({ params }: { params: Promise<{ token
             <p className="text-slate-600 mb-8">
               Your information has been submitted. {customer.contractor.contact_name} will be in touch soon to discuss your project.
             </p>
+
+            {/* Account Setup CTA */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6">
+              <LogIn className="w-8 h-8 text-amber-600 mx-auto mb-3" />
+              <h3 className="font-semibold text-slate-900 mb-2">Create Your Portal Account</h3>
+              <p className="text-sm text-slate-600 mb-4">
+                Set up a password to access your customer portal, where you can view estimates, sign contracts, and track your projects.
+              </p>
+              <Link
+                href={`/portal/setup/${token}`}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all"
+              >
+                <LogIn className="w-5 h-5" />
+                Set Up Account
+              </Link>
+            </div>
+
             <div className="bg-slate-100 rounded-xl p-6">
               <h3 className="font-semibold text-slate-900 mb-4">Questions?</h3>
               <div className="space-y-3">

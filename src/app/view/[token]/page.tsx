@@ -228,14 +228,29 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ token
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Status Banner */}
+        {/* Status Banner with Signature */}
         {project.customer_signature && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-green-900">Contract Signed</p>
-              <p className="text-sm text-green-700">
-                Signed on {project.customer_signed_at ? formatDate(project.customer_signed_at) : 'N/A'}
+          <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-green-900">Contract Signed</p>
+                <p className="text-sm text-green-700">
+                  Signed on {project.customer_signed_at ? formatDate(project.customer_signed_at) : 'N/A'}
+                </p>
+              </div>
+            </div>
+            <div className="border-t border-green-200 pt-4">
+              <p className="text-xs text-green-700 mb-2">Customer Signature:</p>
+              <div className="bg-white rounded-lg p-3 border border-green-200">
+                <img
+                  src={project.customer_signature}
+                  alt="Customer signature"
+                  className="max-h-20 mx-auto"
+                />
+              </div>
+              <p className="text-xs text-green-600 mt-2 text-center">
+                {project.customer.name} • {project.customer_signed_at ? formatDate(project.customer_signed_at) : ''}
               </p>
             </div>
           </div>

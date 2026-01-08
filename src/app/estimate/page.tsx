@@ -29,7 +29,8 @@ import {
   Share2,
   Copy,
   ExternalLink,
-  Star
+  Star,
+  MessageSquare
 } from 'lucide-react'
 
 const GOOGLE_REVIEW_URL = 'https://g.page/r/CXNV4tvBOerLEBM/review'
@@ -443,6 +444,8 @@ function EstimatePageContent() {
         totalSquareFeet: project.total_square_feet,
         estimatedCost: project.estimated_cost,
         createdAt: project.created_at,
+        customerSignature: project.customer_signature || undefined,
+        customerSignedAt: project.customer_signature_date || undefined,
       })
     } else {
       // Download Contract PDF
@@ -1088,22 +1091,29 @@ function EstimatePageContent() {
                   <p className="text-sm text-green-600 text-center">Link copied to clipboard!</p>
                 )}
 
-                <div className="flex gap-3 pt-2">
+                <div className="grid grid-cols-3 gap-2 pt-2">
                   <a
                     href={shareUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="flex flex-col items-center justify-center gap-1 px-3 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-5 h-5" />
                     Preview
                   </a>
                   <a
-                    href={`sms:?body=View your estimate: ${shareUrl}`}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    href={`sms:${project?.customer?.phone || ''}?body=Hi${project?.customer?.name ? ` ${project.customer.name.split(' ')[0]}` : ''}! View your estimate here: ${shareUrl}`}
+                    className="flex flex-col items-center justify-center gap-1 px-3 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
-                    <Phone className="w-4 h-4" />
-                    Text Link
+                    <MessageSquare className="w-5 h-5" />
+                    Text
+                  </a>
+                  <a
+                    href={`mailto:${project?.customer?.email || ''}?subject=Your Flooring Estimate&body=Hi${project?.customer?.name ? ` ${project.customer.name.split(' ')[0]}` : ''},%0A%0AYour estimate is ready! View it here:%0A%0A${encodeURIComponent(shareUrl)}%0A%0APlease let me know if you have any questions.%0A%0AThank you!`}
+                    className="flex flex-col items-center justify-center gap-1 px-3 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  >
+                    <Mail className="w-5 h-5" />
+                    Email
                   </a>
                 </div>
               </div>
