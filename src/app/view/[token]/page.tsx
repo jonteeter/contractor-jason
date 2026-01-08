@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useRef } from 'react'
+import SignatureCanvas from 'react-signature-canvas'
 import {
   User,
   Phone,
@@ -12,7 +13,11 @@ import {
   CheckCircle,
   FileText,
   Building2,
-  Calendar
+  Calendar,
+  PenTool,
+  X,
+  RotateCcw,
+  Loader2
 } from 'lucide-react'
 
 interface Customer {
@@ -83,6 +88,11 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ token
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showSignModal, setShowSignModal] = useState(false)
+  const [signing, setSigning] = useState(false)
+  const [signError, setSignError] = useState('')
+  const [signSuccess, setSignSuccess] = useState(false)
+  const sigCanvas = useRef<SignatureCanvas>(null)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -104,6 +114,54 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ token
 
     fetchProject()
   }, [token])
+
+  const clearSignature = () => {
+    sigCanvas.current?.clear()
+    setSignError('')
+  }
+
+  const handleSignContract = async () => {
+    if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
+      setSignError('Please provide your signature')
+      return
+    }
+
+    setSigning(true)
+    setSignError('')
+
+    try {
+      const signatureData = sigCanvas.current.toDataURL('image/png')
+
+      const response = await fetch(`/api/public/${token}/sign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signature: signatureData })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save signature')
+      }
+
+      setSignSuccess(true)
+      setShowSignModal(false)
+
+      // Update local project state to show signed status
+      if (project) {
+        setProject({
+          ...project,
+          customer_signature: signatureData,
+          customer_signed_at: new Date().toISOString(),
+          status: 'approved'
+        })
+      }
+    } catch (err) {
+      setSignError(err instanceof Error ? err.message : 'Failed to save signature')
+    } finally {
+      setSigning(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -332,6 +390,40 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ token
           </div>
         )}
 
+        {/* Sign Contract CTA - only show if not signed */}
+        {!project.customer_signature && (
+          <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold mb-2">Ready to proceed?</h3>
+                <p className="text-amber-100 text-sm">
+                  Sign this contract to approve the estimate and schedule your project.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowSignModal(true)}
+                className="flex items-center gap-2 bg-white text-amber-600 px-6 py-3 rounded-xl font-semibold hover:bg-amber-50 transition-colors shadow-md"
+              >
+                <PenTool className="w-5 h-5" />
+                Sign Contract
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Success Message after signing */}
+        {signSuccess && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+            <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-green-900">Thank you for signing!</p>
+              <p className="text-sm text-green-700">
+                {project.contractor.company_name} has been notified and will be in touch soon.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Contact Contractor */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-900 mb-4">Questions?</h3>
@@ -369,6 +461,110 @@ export default function PublicEstimatePage({ params }: { params: Promise<{ token
           <p className="mt-1">Powered by Tary</p>
         </div>
       </main>
+
+      {/* Signature Modal */}
+      {showSignModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-amber-600 to-orange-500 px-5 py-4 flex items-center justify-between">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <PenTool className="w-5 h-5" />
+                Sign Contract
+              </h2>
+              <button
+                onClick={() => {
+                  setShowSignModal(false)
+                  setSignError('')
+                }}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-5 space-y-4">
+              <div className="text-sm text-slate-600">
+                <p className="mb-2">
+                  By signing below, you agree to the estimate of{' '}
+                  <strong className="text-slate-900">
+                    {formatCurrency(project.estimated_cost)}
+                  </strong>{' '}
+                  for the described flooring work.
+                </p>
+                <p className="text-slate-500">
+                  Please use your finger or mouse to sign in the box below.
+                </p>
+              </div>
+
+              {/* Signature Pad */}
+              <div className="relative">
+                <div className="border-2 border-dashed border-slate-300 rounded-xl overflow-hidden bg-slate-50">
+                  <SignatureCanvas
+                    ref={sigCanvas}
+                    penColor="black"
+                    canvasProps={{
+                      className: 'w-full h-48',
+                      style: { width: '100%', height: '192px' }
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={clearSignature}
+                  className="absolute top-2 right-2 p-2 bg-white rounded-lg shadow-sm border border-slate-200 text-slate-500 hover:text-slate-700 hover:border-slate-300 transition-colors"
+                  title="Clear signature"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+
+              {signError && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                  {signError}
+                </p>
+              )}
+
+              {/* Signer Info */}
+              <div className="text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg">
+                <p>Signing as: <strong className="text-slate-700">{project.customer.name}</strong></p>
+                <p>Date: <strong className="text-slate-700">{new Date().toLocaleDateString()}</strong></p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-4 bg-slate-50 flex gap-3 justify-end border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setShowSignModal(false)
+                  setSignError('')
+                }}
+                className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+                disabled={signing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSignContract}
+                disabled={signing}
+                className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {signing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Signing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    Confirm &amp; Sign
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
