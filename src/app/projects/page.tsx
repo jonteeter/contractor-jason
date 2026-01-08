@@ -13,8 +13,11 @@ import {
   User,
   ChevronRight,
   Filter,
-  Calculator
+  Calculator,
+  Star
 } from 'lucide-react'
+
+const GOOGLE_REVIEW_URL = 'https://g.page/r/CXNV4tvBOerLEBM/review'
 
 interface Customer {
   id: string
@@ -262,6 +265,17 @@ export default function ProjectsPage() {
                           <span className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-medium ${getSignatureStatus(project)!.color} whitespace-nowrap`}>
                             ✓ {getSignatureStatus(project)!.label}
                           </span>
+                        )}
+                        {project.status === 'completed' && project.customer.phone && (
+                          <a
+                            href={`sms:${project.customer.phone}?body=Thank you for choosing The Best Hardwood Flooring Co.! If you're happy with your new floors, we'd really appreciate a review: ${GOOGLE_REVIEW_URL}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors"
+                            title="Request Google Review"
+                          >
+                            <Star className="w-3 h-3" />
+                            <span className="hidden sm:inline">Review</span>
+                          </a>
                         )}
                       </div>
                     </div>

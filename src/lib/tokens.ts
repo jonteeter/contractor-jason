@@ -17,9 +17,17 @@ export function isValidToken(token: string): boolean {
 }
 
 /**
- * Generate a shareable URL for a project
+ * Generate a shareable URL for a project estimate
  */
 export function getPublicUrl(token: string): string {
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
   return `${baseUrl}/view/${token}`
+}
+
+/**
+ * Generate a shareable URL for customer intake form
+ */
+export function getIntakeUrl(token: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+  return `${baseUrl}/intake/${token}`
 }

@@ -28,8 +28,11 @@ import {
   Mail,
   Share2,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Star
 } from 'lucide-react'
+
+const GOOGLE_REVIEW_URL = 'https://g.page/r/CXNV4tvBOerLEBM/review'
 
 interface Customer {
   id: string
@@ -688,6 +691,15 @@ function EstimatePageContent() {
                 <Share2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Share</span>
               </Button>
+              {project.status === 'completed' && (
+                <a
+                  href={`sms:${project.customer.phone}?body=Thank you for choosing The Best Hardwood Flooring Co.! If you're happy with your new floors, we'd really appreciate a review: ${GOOGLE_REVIEW_URL}`}
+                  className="touch-target inline-flex items-center text-xs sm:text-sm px-3 sm:px-4 py-2 text-yellow-600 border border-yellow-600 hover:bg-yellow-50 active:scale-95 transition-transform flex-shrink-0 rounded-md font-medium"
+                >
+                  <Star className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Request Review</span>
+                </a>
+              )}
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { X, Copy, CheckCircle, Phone, ExternalLink, Zap } from 'lucide-react'
 
 interface Customer {
   id: string
@@ -52,6 +53,15 @@ export default function CustomersPage() {
   const [editFormData, setEditFormData] = useState<Partial<Customer>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Quick-add state
+  const [showQuickAdd, setShowQuickAdd] = useState(false)
+  const [quickAddPhone, setQuickAddPhone] = useState('')
+  const [quickAddEmail, setQuickAddEmail] = useState('')
+  const [quickAddName, setQuickAddName] = useState('')
+  const [quickAddLoading, setQuickAddLoading] = useState(false)
+  const [quickAddResult, setQuickAddResult] = useState<{ intakeUrl: string; customer: Customer } | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -102,6 +112,63 @@ export default function CustomersPage() {
     }
 
     setFilteredCustomers(filtered)
+  }
+
+  const handleQuickAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!quickAddPhone && !quickAddEmail) {
+      alert('Please enter a phone number or email')
+      return
+    }
+
+    setQuickAddLoading(true)
+    try {
+      const response = await fetch('/api/customers/quick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: quickAddPhone,
+          email: quickAddEmail,
+          name: quickAddName
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create customer')
+      }
+
+      setQuickAddResult({
+        intakeUrl: result.intakeUrl,
+        customer: result.customer
+      })
+      loadCustomers() // Refresh the list
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create customer')
+    } finally {
+      setQuickAddLoading(false)
+    }
+  }
+
+  const handleCopyIntakeLink = async () => {
+    if (!quickAddResult) return
+    try {
+      await navigator.clipboard.writeText(quickAddResult.intakeUrl)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch (err) {
+      console.error('Copy failed:', err)
+    }
+  }
+
+  const resetQuickAdd = () => {
+    setShowQuickAdd(false)
+    setQuickAddPhone('')
+    setQuickAddEmail('')
+    setQuickAddName('')
+    setQuickAddResult(null)
+    setLinkCopied(false)
   }
 
   const loadCustomerProjects = async (customerId: string) => {
@@ -260,12 +327,22 @@ export default function CustomersPage() {
                 Customers
               </h1>
             </div>
-            <Link href="/customer-wizard">
-              <Button className="touch-target bg-amber-500 hover:bg-amber-600 text-white px-4 sm:px-6 active:scale-95 transition-transform">
-                <span className="hidden sm:inline">New Customer</span>
-                <span className="sm:hidden">New</span>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setShowQuickAdd(true)}
+                variant="outline"
+                className="touch-target text-green-600 border-green-600 hover:bg-green-50 px-3 sm:px-4 active:scale-95 transition-transform"
+              >
+                <Zap className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Quick Add</span>
               </Button>
-            </Link>
+              <Link href="/customer-wizard">
+                <Button className="touch-target bg-amber-500 hover:bg-amber-600 text-white px-4 sm:px-6 active:scale-95 transition-transform">
+                  <span className="hidden sm:inline">New Customer</span>
+                  <span className="sm:hidden">New</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -655,6 +732,154 @@ export default function CustomersPage() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Add Modal */}
+      {showQuickAdd && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Quick Add Customer</h3>
+                <p className="text-sm text-slate-500">Enter minimal info, send them a link to complete</p>
+              </div>
+              <button
+                onClick={resetQuickAdd}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            {!quickAddResult ? (
+              <form onSubmit={handleQuickAdd} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={quickAddPhone}
+                    onChange={(e) => setQuickAddPhone(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+
+                <div className="text-center text-sm text-slate-500">— or —</div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={quickAddEmail}
+                    onChange={(e) => setQuickAddEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="customer@email.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Name (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={quickAddName}
+                    onChange={(e) => setQuickAddName(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    placeholder="John Smith"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={quickAddLoading || (!quickAddPhone && !quickAddEmail)}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {quickAddLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5" />
+                      Create & Get Link
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <div className="p-6 space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-slate-900 mb-2">Customer Created!</h4>
+                  <p className="text-sm text-slate-600">
+                    Send this link to your customer to have them fill out their info:
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <input
+                    type="text"
+                    readOnly
+                    value={quickAddResult.intakeUrl}
+                    className="flex-1 bg-transparent text-sm text-slate-700 outline-none"
+                  />
+                  <button
+                    onClick={handleCopyIntakeLink}
+                    className={`p-2 rounded-lg transition-colors ${
+                      linkCopied
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                    }`}
+                  >
+                    {linkCopied ? (
+                      <CheckCircle className="w-5 h-5" />
+                    ) : (
+                      <Copy className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+
+                {linkCopied && (
+                  <p className="text-sm text-green-600 text-center">Link copied!</p>
+                )}
+
+                <div className="flex gap-3">
+                  <a
+                    href={quickAddResult.intakeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Preview
+                  </a>
+                  <a
+                    href={`sms:${quickAddResult.customer.phone || ''}?body=Hi! Please fill out your info here: ${quickAddResult.intakeUrl}`}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Phone className="w-4 h-4" />
+                    Text Link
+                  </a>
+                </div>
+
+                <button
+                  onClick={resetQuickAdd}
+                  className="w-full py-2 text-slate-600 hover:text-slate-900 font-medium"
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
