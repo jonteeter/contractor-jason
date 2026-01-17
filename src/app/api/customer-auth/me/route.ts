@@ -40,8 +40,7 @@ export async function GET() {
           company_name,
           contact_name,
           phone,
-          email,
-          logo_url
+          email
         )
       `)
       .eq('auth_token', authToken)
