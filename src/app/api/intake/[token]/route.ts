@@ -45,8 +45,7 @@ export async function GET(
           company_name,
           contact_name,
           phone,
-          email,
-          logo_url
+          email
         )
       `)
       .eq('intake_token', token)
