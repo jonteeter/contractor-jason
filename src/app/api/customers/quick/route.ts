@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         city: '',
         state: '',
         zip_code: '',
-        customer_type: 'residential',
+        customer_type: 'new',
         intake_token: intakeToken,
         intake_token_created_at: new Date().toISOString()
       })
