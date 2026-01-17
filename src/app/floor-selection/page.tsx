@@ -58,6 +58,13 @@ export default function FloorSelectionPage() {
 
   const totalSteps = 4
 
+  // Auto-advance past stain step if finish is not stain
+  useEffect(() => {
+    if (step === 4 && selection.finish && selection.finish !== 'stain' && !saving && projectId) {
+      saveFloorSelection()
+    }
+  }, [step, selection.finish, saving, projectId])
+
   // Load project ID and template from API
   useEffect(() => {
     const init = async () => {
@@ -343,9 +350,15 @@ export default function FloorSelectionPage() {
 
       case 4:
         if (selection.finish !== 'stain') {
-          // Skip stain selection if not stain finish
-          handleNext()
-          return null
+          // Skip stain selection - useEffect will handle auto-save
+          return (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <Loader2 className="w-12 h-12 text-amber-500 animate-spin mx-auto mb-4" />
+                <p className="text-slate-600">Saving your selections...</p>
+              </div>
+            </div>
+          )
         }
 
         return (
